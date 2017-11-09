@@ -16,34 +16,39 @@ def define_multi_region_priors(segmentation_image,levelset_boundary_image,
     
     """ Define Multi-Region Priors
 
-    Enhances the contrast between selected regions from a MGDM brain segmentation.
+    Defines location priors based on combinations of regions from a MGDM brain segmentation.
+    This version creates priors for the region between lateral ventricles, the region above 
+    the frontal ventricular horns, and the internal capsule.
 
     Parameters
     ----------
-    intensity_image: niimg
-    
-    segmentationImag : niimg
-    
+    segmentation_image : niimg
+         MGDM segmentation (_mgdm_seg) giving a labeling of the brain
     levelset_boundary_image: niimg
-    
+         MGDM boundary distance image (_mgdm_dist) giving the absolute distance to the closest boundary
     atlas_file: str, optional
-        Path to plain text atlas file (default is stored in DEFAULT_ATLAS)
-    
-    enhanced_region: str
-    
-    contrast_background: str
-    
+        Path to brain atlas file to define segmentation labels (default is stored in DEFAULT_ATLAS)
     partial_voluming_distance: float
-    
+        Distance used to compute partial voluming at the boundary of structures (default is 0)
 
     Returns
     ----------
-    
+    dict
+        Dictionary collecting outputs under the following keys
+        (suffix of output files in brackets)
+
+        * inter_ventricular_pv (niimg): Partial volume estimate of the inter-ventricular 
+          region(_mrp_intv)
+        * ventricular_horns_pv (niimg): Partial volume estimate of the region above the
+          ventricular horns (_mrp_vhorns)
+        * internal_capsule_pv (niimg): Partial volume estimate of the internal capsule
+          (_mrp_icap)
+ 
 
     Notes
     ----------
+    Original Java module by Pierre-Louis Bazin.
    
-
     References
     ----------
     """
@@ -59,15 +64,15 @@ def define_multi_region_priors(segmentation_image,levelset_boundary_image,
 
         intervent_file = _fname_4saving(file_name=file_name,
                                   rootfile=segmentation_image,
-                                  suffix='dmrp_intervent')
+                                  suffix='mrp_ivent')
 
         horns_file = _fname_4saving(file_name=file_name,
                                   rootfile=segmentation_image,
-                                  suffix='dmrp_horns')
+                                  suffix='mrp_vhorns')
         
         intercap_file = _fname_4saving(file_name=file_name,
                                   rootfile=segmentation_image,
-                                  suffix='dmrp_intercap')    
+                                  suffix='mrp_icap')    
 
     # start virtual machine, if not already running
     try:
@@ -143,4 +148,4 @@ def define_multi_region_priors(segmentation_image,levelset_boundary_image,
         save_volume(os.path.join(output_dir, intercap_file), intercap)
 
 
-    return {'intervent': intervent, 'horns': horns, 'intercap': intercap}
+    return {'inter_ventricular_pv': intervent, 'ventricular_horns_pv': horns, 'internal_capsule_pv': intercap}
