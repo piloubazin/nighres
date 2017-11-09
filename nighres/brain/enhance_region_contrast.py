@@ -18,34 +18,53 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     
     """ Enhance Region Contrast
 
-    Estimates brain structures from an atlas for MRI data using
-    a Multiple Object Geometric Deformable Model (MGDM)
-
+    Enhances the contrast between selected regions from a MGDM brain segmentation.
+    
     Parameters
     ----------
     intensity_image: niimg
+        Intensity contrast to enhance between the chosen regions
     
     segmentationImag : niimg
+       MGDM brain segmentation image (_mgdm_seg)
     
     levelset_boundary_image: niimg
+       MGDM distance to closest boundary (_mgdm_dist)
     
     atlas_file: str, optional
-        Path to plain text atlas file (default is stored in DEFAULT_ATLAS)
+        Path to MGDM brain atlas file (default is stored in DEFAULT_ATLAS)
     
     enhanced_region: str
-    
+       Region of interest to enhance (choices are: 'crwm', 'cbwm', 'csf' for
+       cerebral and cerebellar WM, CSF)
     contrast_background: str
-    
+      Region to contrast as background (choices are: 'crgm', 'crwm', 'brain'
+      for cerebral and cerebellar GM, brain tissues)
     partial_voluming_distance: float
-    
+      Distance in voxels for estimating partial voluming at the boundaries
 
     Returns
     ----------
-    
+    dict
+        Dictionary collecting outputs under the following keys
+        (suffix of output files in brackets, with # the region and % the background label above)
+
+        * region_mask (niimg): Hard segmentation mask of the (GM) region
+          of interest (_emask_#)
+        * background_mask (niimg): Hard segmentation mask of the (CSF) region
+          background (_emask_%)
+        * region_proba (niimg): Probability map of the (GM) region
+          of interest (_eproba_#)
+        * background_proba (niimg): Probability map of the (CSF) region
+          background (_eproba_%)
+        * region_pv (niimg): Levelset surface of the (GM) region
+          of interest (_epv_#)
+        * background_pv (niimg): Levelset surface of the (CSF) region
+          background (_epvl_%)
 
     Notes
     ----------
-   
+    Original Java module by Pierre-Louis Bazin.
 
     References
     ----------
@@ -59,27 +78,6 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     # make sure that saving related parameters are correct
     if save_data:
         output_dir = _output_dir_4saving(output_dir, intensity_image)
-
-        reg_file = _fname_4saving(file_name=file_name,
-                                  rootfile=intensity_image,
-                                  suffix='erc_reg')
-
-        back_file = _fname_4saving(file_name=file_name,
-                                  rootfile=intensity_image,
-                                  suffix='erc_back')
-
-        regProb_file = _fname_4saving(file_name=file_name,
-                                   rootfile=intensity_image,
-                                   suffix='erc_regProb')
-
-        backProb_file = _fname_4saving(file_name=file_name,
-                                   rootfile=intensity_image,
-                                   suffix='erc_backProb')
-        
-        regPartVol_file = _fname_4saving(file_name=file_name,
-                                   rootfile=intensity_image,
-                                   suffix='erc_regPartVol')
-        
 
     # start virtual machine, if not already running
     try:
@@ -129,6 +127,32 @@ def enhance_region_contrast(intensity_image, segmentation_image,
         raise
         return
    
+
+    if save_data:
+        reg_file = _fname_4saving(file_name=file_name,
+                                  rootfile=intensity_image,
+                                  suffix='emask'+str(erc.getRegionName()))
+
+        back_file = _fname_4saving(file_name=file_name,
+                                  rootfile=intensity_image,
+                                  suffix='emask'+str(erc.getBackgroundName()))
+
+        reg_proba_file = _fname_4saving(file_name=file_name,
+                                   rootfile=intensity_image,
+                                   suffix='eproba'+str(erc.getRegionName()))
+
+        back_proba_file = _fname_4saving(file_name=file_name,
+                                   rootfile=intensity_image,
+                                   suffix='eproba'+str(erc.getBackgroundName()))
+        
+        reg_pv_file = _fname_4saving(file_name=file_name,
+                                   rootfile=intensity_image,
+                                   suffix='epv'+str(erc.getRegionName()))
+        
+        back_pv_file = _fname_4saving(file_name=file_name,
+                                   rootfile=intensity_image,
+                                   suffix='epv'+str(erc.getBackgroundName()))
+        
     
     # reshape output to what nibabel likes
     reg_data = np.reshape(np.array(erc.getRegionMask(),
@@ -137,13 +161,16 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     back_data = np.reshape(np.array(erc.getBackgroundMask(),
                                     dtype=np.int32), dimensions, 'F')
     
-    regProb_data = np.reshape(np.array(erc.getRegionProbability(),
+    reg_proba_data = np.reshape(np.array(erc.getRegionProbability(),
                                    dtype=np.float32), dimensions, 'F')
 
-    backProb_data = np.reshape(np.array(erc.getBackgroundProbability(),
+    back_proba_data = np.reshape(np.array(erc.getBackgroundProbability(),
                                     dtype=np.float32), dimensions, 'F')
     
-    regPartVol_data = np.reshape(np.array(erc.getRegionPartialVolume(),
+    reg_pv_data = np.reshape(np.array(erc.getRegionPartialVolume(),
+                                    dtype=np.float32), dimensions, 'F')
+    
+    back_pv_data = np.reshape(np.array(erc.getBackgroundPartialVolume(),
                                     dtype=np.float32), dimensions, 'F')
 
     ## membership and labels output has a 4th dimension, set to 6
@@ -162,21 +189,25 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     back = nb.Nifti1Image(back_data, affine, header)
 
     header['cal_max'] = np.nanmax(regProb_data)
-    regProb = nb.Nifti1Image(regProb_data, affine, header)
+    reg_proba = nb.Nifti1Image(reg_prob_data, affine, header)
 
     header['cal_max'] = np.nanmax(backProb_data)
-    backProb = nb.Nifti1Image(backProb_data, affine, header)
+    back_proba = nb.Nifti1Image(back_prob_data, affine, header)
     
-    header['cal_max'] = np.nanmax(regPartVol_data)
-    regPartVol = nb.Nifti1Image(regPartVol_data, affine, header)
+    header['cal_max'] = np.nanmax(reg_pv_data)
+    reg_pv = nb.Nifti1Image(reg_pv_data, affine, header)
+
+    header['cal_max'] = np.nanmax(back_pv_data)
+    back_pv = nb.Nifti1Image(back_pv_data, affine, header)
 
     if save_data:
         save_volume(os.path.join(output_dir, reg_file), reg)
         save_volume(os.path.join(output_dir, back_file), back)
-        save_volume(os.path.join(output_dir, regProb_file), regProb)
-        save_volume(os.path.join(output_dir, backProb_file), backProb)
-        save_volume(os.path.join(output_dir, regPartVol_file), regPartVol)
+        save_volume(os.path.join(output_dir, reg_proba_file), reg_proba)
+        save_volume(os.path.join(output_dir, back_proba_file), back_proba)
+        save_volume(os.path.join(output_dir, reg_pv_file), reg_pv)
+        save_volume(os.path.join(output_dir, back_pv_file), back_pv)
 
     return {'region_mask': reg, 'background_mask': back,
-            'region_prob': regProb, 'background_prob': backProb,
-            'region_partial_vol': regPartVol}
+            'region_proba': reg_proba, 'background_proba': back_proba,
+            'region_pv': reg_pv, 'background_pv': back_pv}
