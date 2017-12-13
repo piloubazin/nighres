@@ -8,4 +8,4 @@ import segmentation
 import filtering
 from global_settings import ATLAS_DIR, TOPOLOGY_LUT_DIR, DEFAULT_ATLAS
 
-__all__ = ['io', 'brain', 'laminar', 'surface', 'data', 'segmentation', 'filter', '__version__']
+__all__ = ['io', 'brain', 'laminar', 'surface', 'data', 'segmentation', 'filtering', '__version__']

@@ -10,10 +10,10 @@ matrix:
     script: "travis/make_dist.sh"
     before_deploy:
     - pip install --user twine
-    - pip install --user urllib3
+    - pip install --user urllib3[secure]
     deploy:
       provider: pypi
-      server: https://test.pypi.org/legacy/
+      #server: https://test.pypi.org/legacy/
       user: "nighres"
       # using plain text password for testpypi, when switching to real pypi use encrypted (below)
       password:
