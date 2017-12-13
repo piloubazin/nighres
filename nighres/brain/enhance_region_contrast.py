@@ -25,7 +25,7 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     intensity_image: niimg
         Intensity contrast to enhance between the chosen regions
     
-    segmentationImag : niimg
+    segmentation_image : niimg
        MGDM brain segmentation image (_mgdm_seg)
     
     levelset_boundary_image: niimg
@@ -37,9 +37,11 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     enhanced_region: str
        Region of interest to enhance (choices are: 'crwm', 'cbwm', 'csf' for
        cerebral and cerebellar WM, CSF)
+       
     contrast_background: str
       Region to contrast as background (choices are: 'crgm', 'crwm', 'brain'
       for cerebral and cerebellar GM, brain tissues)
+      
     partial_voluming_distance: float
       Distance in voxels for estimating partial voluming at the boundaries
 
@@ -60,7 +62,7 @@ def enhance_region_contrast(intensity_image, segmentation_image,
         * region_pv (niimg): Levelset surface of the (GM) region
           of interest (_epv_#)
         * background_pv (niimg): Levelset surface of the (CSF) region
-          background (_epvl_%)
+          background (_epv_%)
 
     Notes
     ----------
@@ -188,11 +190,11 @@ def enhance_region_contrast(intensity_image, segmentation_image,
     header['cal_max'] = np.nanmax(back_data)
     back = nb.Nifti1Image(back_data, affine, header)
 
-    header['cal_max'] = np.nanmax(regProb_data)
-    reg_proba = nb.Nifti1Image(reg_prob_data, affine, header)
+    header['cal_max'] = np.nanmax(reg_proba_data)
+    reg_proba = nb.Nifti1Image(reg_proba_data, affine, header)
 
-    header['cal_max'] = np.nanmax(backProb_data)
-    back_proba = nb.Nifti1Image(back_prob_data, affine, header)
+    header['cal_max'] = np.nanmax(back_proba_data)
+    back_proba = nb.Nifti1Image(back_proba_data, affine, header)
     
     header['cal_max'] = np.nanmax(reg_pv_data)
     reg_pv = nb.Nifti1Image(reg_pv_data, affine, header)

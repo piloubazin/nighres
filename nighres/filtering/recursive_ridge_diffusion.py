@@ -22,24 +22,55 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
 
     Parameters
     ----------
-    
+    input_image:
+
+	ridge_intensities:
+
+	ridge_filter:
+	
+	surface_levelset:
+
+	orientation:
+
+	ang_factor:
+
+	loc_prior:
+	
+	nb_scales:
+
+	propagation_model:
+
+	diffusion_factor:
+
+	similarity_scale:
+
+	neighborhood_size:
+
+	max_iter:
+
+	max_diff:
     
     Returns
     ----------
-   
+   	dict
+        Dictionary collecting outputs under the following keys
+        (suffix of output files in brackets)
+
+        * filter (niimg): 
+        * proba (niimg): 
+        * propagation (niimg): 
+        * scale (niimg): 
+        * ridge_direction (niimg): 
+        * correction (niimg): 
+		* ridge_size (niimg): 
 
     Notes
     ----------
-    Original Java module by Pierre-Louis Bazin. Algorithm details can be
-    found in [1]_ and [2]_
+    Original Java module by Pierre-Louis Bazin.
 
     References
     ----------
-    .. [1] Bogovic, Prince and Bazin (2013). A multiple object geometric
-       deformable model for image segmentation.
-       doi:10.1016/j.cviu.2012.10.006.A
-    .. [2] Fan, Bazin and Prince (2008). A multi-compartment segmentation
-       framework with homeomorphic level sets. DOI: 10.1109/CVPR.2008.4587475
+
     """
 
     print('\n Recursive Ridge Diffusion')
@@ -53,31 +84,31 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
 
         filter_file = _fname_4saving(file_name=file_name,
                                   rootfile=input_image,
-                                  suffix='ridge_filter')
+                                  suffix='rrd_filter')
 
         proba_file = _fname_4saving(file_name=file_name,
                                   rootfile=input_image,
-                                  suffix='ridge_proba')
+                                  suffix='rrd_proba')
 
-        propag_file = _fname_4saving(file_name=file_name,
+        propagation_file = _fname_4saving(file_name=file_name,
                                    rootfile=input_image,
-                                   suffix='ridge_propag')
+                                   suffix='rrd_propag')
 
         scale_file = _fname_4saving(file_name=file_name,
                                    rootfile=input_image,
-                                   suffix='ridge_scale')
+                                   suffix='rrd_scale')
 
-        direction_file = _fname_4saving(file_name=file_name,
+        ridge_direction_file = _fname_4saving(file_name=file_name,
                                   rootfile=input_image,
-                                  suffix='ridge_direction')
+                                  suffix='rrd_dir')
 
-        correct_file = _fname_4saving(file_name=file_name,
+        correction_file = _fname_4saving(file_name=file_name,
                                   rootfile=input_image,
-                                  suffix='ridge_correct')
+                                  suffix='rrd_correct')
         
-        size_file = _fname_4saving(file_name=file_name,
+        ridge_size_file = _fname_4saving(file_name=file_name,
                                   rootfile=input_image,
-                                  suffix='ridge_size')
+                                  suffix='rrd_size')
 
     # start virtual machine, if not already running
     try:
@@ -142,19 +173,19 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     proba_data = np.reshape(np.array(rrd.getProbabilityResponseImage(),
                                     dtype=np.float32), dimensions, 'F')
     
-    propag_data = np.reshape(np.array(rrd.getPropagatedResponseImage(),
+    propagation_data = np.reshape(np.array(rrd.getPropagatedResponseImage(),
                                     dtype=np.float32), dimensions, 'F')
     
     scale_data = np.reshape(np.array(rrd.getDetectionScaleImage(),
                                    dtype=np.int32), dimensions, 'F')
 
-    direction_data = np.reshape(np.array(rrd.getRidgeDirectionImage(),
+    ridge_direction_data = np.reshape(np.array(rrd.getRidgeDirectionImage(),
                                     dtype=np.float32), (dimensions[0],dimensions[1],dimensions[2],3) , 'F')
     
-    correct_data = np.reshape(np.array(rrd.getDirectionalCorrectionImage(),
+    correction_data = np.reshape(np.array(rrd.getDirectionalCorrectionImage(),
                                     dtype=np.float32), dimensions, 'F')
     
-    size_data = np.reshape(np.array(rrd.getRidgeSizeImage(),
+    ridge_size_data = np.reshape(np.array(rrd.getRidgeSizeImage(),
                                     dtype=np.float32), dimensions, 'F')
     
 
@@ -166,30 +197,30 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     header['cal_max'] = np.nanmax(proba_data)
     proba = nb.Nifti1Image(proba_data, affine, header)
 
-    header['cal_max'] = np.nanmax(propag_data)
-    propag = nb.Nifti1Image(propag_data, affine, header)
+    header['cal_max'] = np.nanmax(propagation_data)
+    propagation = nb.Nifti1Image(propagation_data, affine, header)
 
     header['cal_max'] = np.nanmax(scale_data)
     scale = nb.Nifti1Image(scale_data, affine, header)
     
-    header['cal_max'] = np.nanmax(direction_data)
-    direction = nb.Nifti1Image(direction_data, affine, header)
+    header['cal_max'] = np.nanmax(ridge_direction_data)
+    ridge_direction = nb.Nifti1Image(ridge_direction_data, affine, header)
     
-    header['cal_max'] = np.nanmax(correct_data)
-    correct = nb.Nifti1Image(correct_data, affine, header)
+    header['cal_max'] = np.nanmax(correction_data)
+    correction = nb.Nifti1Image(correction_data, affine, header)
     
-    header['cal_max'] = np.nanmax(size_data)
-    size = nb.Nifti1Image(size_data, affine, header)
+    header['cal_max'] = np.nanmax(ridge_size_data)
+    ridge_size = nb.Nifti1Image(ridge_size_data, affine, header)
 
     if save_data:
         save_volume(os.path.join(output_dir, filter_file), filter)
         save_volume(os.path.join(output_dir, proba_file), proba)
-        save_volume(os.path.join(output_dir, propag_file), propag)
+        save_volume(os.path.join(output_dir, propagation_file), propagation)
         save_volume(os.path.join(output_dir, scale_file), scale)
-        save_volume(os.path.join(output_dir, direction_file), direction)
-        save_volume(os.path.join(output_dir, correct_file), correct)
-        save_volume(os.path.join(output_dir, size_file), size)
+        save_volume(os.path.join(output_dir, ridge_direction_file), ridge_direction)
+        save_volume(os.path.join(output_dir, correction_file), correction)
+        save_volume(os.path.join(output_dir, ridge_size_file), ridge_size)
 
     return {'filter': filter, 'proba': proba,
-            'propag': propag, 'scale': scale,
-            'direction': direction, 'correct': correct, 'size': size}
+            'propagation': propagation, 'scale': scale,
+            'ridge_direction': ridge_direction, 'correction': correction, 'ridge_size': ridge_size}

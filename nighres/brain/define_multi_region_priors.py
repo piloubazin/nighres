@@ -24,10 +24,13 @@ def define_multi_region_priors(segmentation_image,levelset_boundary_image,
     ----------
     segmentation_image : niimg
          MGDM segmentation (_mgdm_seg) giving a labeling of the brain
+         
     levelset_boundary_image: niimg
          MGDM boundary distance image (_mgdm_dist) giving the absolute distance to the closest boundary
+         
     atlas_file: str, optional
         Path to brain atlas file to define segmentation labels (default is stored in DEFAULT_ATLAS)
+        
     partial_voluming_distance: float
         Distance used to compute partial voluming at the boundary of structures (default is 0)
 

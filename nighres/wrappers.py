@@ -5,12 +5,12 @@ from nipype.utils.filemanip import split_filename
 import nibabel as nb
 import numpy as np
 import os
-from nighres.brain.mgdm_segmentation import mgdm_segmentation
-from nighres.brain.enhance_region_contrast import enhance_region_contrast
-from nighres.surface.probability_to_levelset import probability_to_levelset
-from nighres.brain.define_multi_region_priors import define_multi_region_priors
-from nighres.filter.recursive_ridge_diffusion import recursive_ridge_diffusion
-from nighres.segmentation.lesion_extraction import lesion_extraction
+from .brain.mgdm_segmentation import mgdm_segmentation
+from .brain.enhance_region_contrast import enhance_region_contrast
+from .surface.probability_to_levelset import probability_to_levelset
+from .brain.define_multi_region_priors import define_multi_region_priors
+from .filtering.recursive_ridge_diffusion import recursive_ridge_diffusion
+from .segmentation.lesion_extraction import lesion_extraction
 
 
 class MGDMSegmentationInputSpec(BaseInterfaceInputSpec):
@@ -91,9 +91,10 @@ class EnhanceRegionContrastOutputSpec(TraitedSpec):
     
     region_mask = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
     background_mask = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
-    region_prob = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
-    background_prob = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
-    region_partial_vol = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
+    region_proba = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
+    background_proba = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
+    region_pv = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
+    background_pv = File(exists=True, desc="Hard brain segmentation with topological constraints (if chosen)")
 
 
 class EnhanceRegionContrast(BaseInterface):
@@ -118,14 +119,14 @@ class EnhanceRegionContrast(BaseInterface):
         outputs = self._outputs().get()
         fname = self.inputs.intensity_image
         path, base, ext = split_filename(fname)
-        outputs["region_mask"] = os.path.abspath(base + '_erc_reg.nii.gz')
-        outputs["background_mask"] = os.path.abspath(base + '_erc_back.nii.gz')
-        outputs["region_prob"] = os.path.abspath(base + '_erc_regProb.nii.gz')
-        outputs["background_prob"] = os.path.abspath(base + '_erc_backProb.nii.gz')
-        outputs["region_partial_vol"] = os.path.abspath(base + '_erc_regPartVol.nii.gz')
+        outputs["region_mask"] = os.path.abspath(base + '_emask_'+self.inputs.enhanced_region+'.nii.gz')
+        outputs["background_mask"] = os.path.abspath(base + '_emask_'+self.inputs.contrast_background+'.nii.gz')
+        outputs["region_proba"] = os.path.abspath(base + '_eproba_'+self.inputs.enhanced_region+'.nii.gz')
+        outputs["background_proba"] = os.path.abspath(base + '_eproba_'+self.inputs.contrast_background+'.nii.gz')
+        outputs["region_pv"] = os.path.abspath(base + '_epv_'+self.inputs.enhanced_region+'.nii.gz')
+        outputs["background_pv"] = os.path.abspath(base + '_epv_'+self.inputs.contrast_background+'.nii.gz')
         return outputs
-    
-    
+
     
 class ProbabilityToLevelsetInputSpec(BaseInterfaceInputSpec):
     
@@ -176,9 +177,9 @@ class DefineMultiRegionPriorsInputSpec(BaseInterfaceInputSpec):
 
 class DefineMultiRegionPriorsOutputSpec(TraitedSpec):
     
-    intervent = File(exists=True, desc="")
-    horns = File(exists=True, desc="")
-    intercap = File(exists=True, desc="")
+    inter_ventricular_pv = File(exists=True, desc="")
+    ventricular_horns_pv = File(exists=True, desc="")
+    internal_capsule_pv = File(exists=True, desc="")
     
 
 class DefineMultiRegionPriors(BaseInterface):
@@ -202,9 +203,9 @@ class DefineMultiRegionPriors(BaseInterface):
         outputs = self._outputs().get()
         fname = self.inputs.segmentation_image
         path, base, ext = split_filename(fname)
-        outputs["intervent"] = os.path.abspath(base + '_dmrp_intervent.nii.gz')
-        outputs["horns"] = os.path.abspath(base + '_dmrp_horns.nii.gz')
-        outputs["intercap"] = os.path.abspath(base + '_dmrp_intercap.nii.gz')
+        outputs["inter_ventricular_pv"] = os.path.abspath(base + '_mrp_ivent.nii.gz')
+        outputs["ventricular_horns_pv"] = os.path.abspath(base + '_mrp_vhorns.nii.gz')
+        outputs["internal_capsule_pv"] = os.path.abspath(base + '_mrp_icap.nii.gz')
         return outputs
     
     
@@ -233,11 +234,11 @@ class RecursiveRidgeDiffusionOutputSpec(TraitedSpec):
     
     filter = File(exists=True, desc="")
     proba = File(exists=True, desc="")
-    propag = File(exists=True, desc="")
+    propagation = File(exists=True, desc="")
     scale = File(exists=True, desc="")
-    direction = File(exists=True, desc="")
-    correct = File(exists=True, desc="")
-    size = File(exists=True, desc="")
+    ridge_direction = File(exists=True, desc="")
+    correction = File(exists=True, desc="")
+    ridge_size = File(exists=True, desc="")
     
 
 class RecursiveRidgeDiffusion(BaseInterface):
@@ -268,13 +269,13 @@ class RecursiveRidgeDiffusion(BaseInterface):
         outputs = self._outputs().get()
         fname = self.inputs.input_image
         path, base, ext = split_filename(fname)
-        outputs["filter"] = os.path.abspath(base + '_ridge_filter.nii.gz')
-        outputs["proba"] = os.path.abspath(base + '_ridge_proba.nii.gz')
-        outputs["propag"] = os.path.abspath(base + '_ridge_propag.nii.gz')
-        outputs["scale"] = os.path.abspath(base + '_ridge_scale.nii.gz')
-        outputs["direction"] = os.path.abspath(base + '_ridge_direction.nii.gz')
-        outputs["correct"] = os.path.abspath(base + '_ridge_correct.nii.gz')
-        outputs["size"] = os.path.abspath(base + '_ridge_size.nii.gz')
+        outputs["filter"] = os.path.abspath(base + '_rrd_filter.nii.gz')
+        outputs["proba"] = os.path.abspath(base + '_rrd_proba.nii.gz')
+        outputs["propagation"] = os.path.abspath(base + '_rrd_propag.nii.gz')
+        outputs["scale"] = os.path.abspath(base + '_rrd_scale.nii.gz')
+        outputs["ridge_direction"] = os.path.abspath(base + '_rrd_dir.nii.gz')
+        outputs["correction"] = os.path.abspath(base + '_rrd_correct.nii.gz')
+        outputs["ridge_size"] = os.path.abspath(base + '_rrd_size.nii.gz')
         return outputs
     
     
@@ -299,12 +300,12 @@ class LesionExtractionInputSpec(BaseInterfaceInputSpec):
 
 class LesionExtractionOutputSpec(TraitedSpec):
     
-    region = File(exists=True, desc="")
+    lesion_prior = File(exists=True, desc="")
     lesion_size = File(exists=True, desc="")
     lesion_proba = File(exists=True, desc="")
-    boundary = File(exists=True, desc="")
-    label = File(exists=True, desc="")
-    score = File(exists=True, desc="")
+    lesion_pv = File(exists=True, desc="")
+    lesion_labels = File(exists=True, desc="")
+    lesion_score = File(exists=True, desc="")
     
 
 class LesionExtraction(BaseInterface):
@@ -333,10 +334,10 @@ class LesionExtraction(BaseInterface):
         outputs = self._outputs().get()
         fname = self.inputs.probability_image
         path, base, ext = split_filename(fname)
-        outputs["region"] = os.path.abspath(base + '_extract_reg.nii.gz')
-        outputs["lesion_size"] = os.path.abspath(base + '_extract_legSize.nii.gz')
-        outputs["lesion_proba"] = os.path.abspath(base + '_extract_legProb.nii.gz')
-        outputs["boundary"] = os.path.abspath(base + '_extract_bound.nii.gz')
-        outputs["label"] = os.path.abspath(base + '_extract_label.nii.gz')
-        outputs["score"] = os.path.abspath(base + '_extract_score.nii.gz')
+        outputs["lesion_prior"] = os.path.abspath(base + '_lesion_prior.nii.gz')
+        outputs["lesion_size"] = os.path.abspath(base + '_lesion_size.nii.gz')
+        outputs["lesion_proba"] = os.path.abspath(base + '_lesion_proba.nii.gz')
+        outputs["lesion_pv"] = os.path.abspath(base + '_lesion_pv.nii.gz')
+        outputs["lesion_labels"] = os.path.abspath(base + '_lesion_labels.nii.gz')
+        outputs["lesion_score"] = os.path.abspath(base + '_lesion_score.nii.gz')
         return outputs

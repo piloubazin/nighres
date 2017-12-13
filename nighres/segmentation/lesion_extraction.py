@@ -23,31 +23,51 @@ def lesion_extraction(probability_image, segmentation_image,
 
     Parameters
     ----------
-    probability_image, semgnetation_image,
-                      levelset_boundary_image,location_prior_image,
-                      atlas_file,
-                      gm_boundary_partial_vol_dist, csf_boundary_partial_vol_dist,
-                      lesion_clust_dist, prob_min_tresh, prob_max_tresh,
-                      small_lesion_size,
-                      save_data=False, output_dir=None,
-                      file_name=None
+    probability_image: niimg
+
+	segmentation_image: niimg
+
+    levelset_boundary_image: niimg
+        MGDM distance to closest boundary (_mgdm_dist)
+
+	location_prior_image: niimg
+	   
+	atlas_file: str
+	    Path to MGDM brain atlas file (default is stored in DEFAULT_ATLAS)
+
+	gm_boundary_partial_vol_dist: float
+
+	csf_boundary_partial_vol_dist: float
+
+	lesion_clust_dist: float
+
+	prob_min_tresh: float
+
+	prob_max_tresh: float
+
+	small_lesion_size: float
+
     
     Returns
     ----------
-   
+   	dict
+        Dictionary collecting outputs under the following keys
+        (suffix of output files in brackets)
+
+        * lesion_prior (niimg): 
+        * lesion_size (niimg): 
+        * lesion_proba (niimg): 
+        * lesion_pv (niimg): 
+        * lesion_labels (niimg): 
+        * lesion_score (niimg): 
 
     Notes
     ----------
-    Original Java module by Pierre-Louis Bazin. Algorithm details can be
-    found in [1]_ and [2]_
+    Original Java module by Pierre-Louis Bazin. 
 
     References
     ----------
-    .. [1] Bogovic, Prince and Bazin (2013). A multiple object geometric
-       deformable model for image segmentation.
-       doi:10.1016/j.cviu.2012.10.006.A
-    .. [2] Fan, Bazin and Prince (2008). A multi-compartment segmentation
-       framework with homeomorphic level sets. DOI: 10.1109/CVPR.2008.4587475
+
     """
 
     print('\n Lesion Extraction')
@@ -59,29 +79,29 @@ def lesion_extraction(probability_image, segmentation_image,
     if save_data:
         output_dir = _output_dir_4saving(output_dir, probability_image)
 
-        reg_file = _fname_4saving(file_name=file_name,
+        lesion_prior_file = _fname_4saving(file_name=file_name,
                                   rootfile=probability_image,
-                                  suffix='extract_reg')
+                                  suffix='lesion_prior')
 
-        legSize_file = _fname_4saving(file_name=file_name,
+        lesion_size_file = _fname_4saving(file_name=file_name,
                                   rootfile=probability_image,
-                                  suffix='extract_legSize')
+                                  suffix='lesion_size')
 
-        legProb_file = _fname_4saving(file_name=file_name,
+        lesion_proba_file = _fname_4saving(file_name=file_name,
                                    rootfile=probability_image,
-                                   suffix='extract_legProb')
+                                   suffix='lesion_proba')
 
-        bound_file = _fname_4saving(file_name=file_name,
+        lesion_pv_file = _fname_4saving(file_name=file_name,
                                    rootfile=probability_image,
-                                   suffix='extract_bound')
+                                   suffix='lesion_pv')
 
-        label_file = _fname_4saving(file_name=file_name,
-                                  rootfile=probability_image,
-                                  suffix='extract_label')
+        lesion_labels_file = _fname_4saving(file_name=file_name,
+                                   rootfile=probability_image,
+                                   suffix='lesion_labels')
 
-        score_file = _fname_4saving(file_name=file_name,
-                                  rootfile=probability_image,
-                                  suffix='extract_score')
+        lesion_score_file = _fname_4saving(file_name=file_name,
+                                   rootfile=probability_image,
+                                   suffix='lesion_score')
 
     # start virtual machine, if not already running
     try:
@@ -141,53 +161,53 @@ def lesion_extraction(probability_image, segmentation_image,
         return
 
     # reshape output to what nibabel likes
-    reg_data = np.reshape(np.array(el.getRegionPrior(),
+    lesion_prior_data = np.reshape(np.array(el.getRegionPrior(),
                                    dtype=np.float32), dimensions, 'F')
 
-    legSize_data = np.reshape(np.array(el.getLesionSize(),
+    lesion_size_data = np.reshape(np.array(el.getLesionSize(),
                                     dtype=np.float32), dimensions, 'F')
     
-    legProb_data = np.reshape(np.array(el.getLesionProba(),
+    lesion_proba_data = np.reshape(np.array(el.getLesionProba(),
                                     dtype=np.float32), dimensions, 'F')
     
-    bound_data = np.reshape(np.array(el.getBoundaryPartialVolume(),
+    lesion_pv_data = np.reshape(np.array(el.getBoundaryPartialVolume(),
                                    dtype=np.float32), dimensions, 'F')
 
-    label_data = np.reshape(np.array(el.getLesionLabels(),
+    lesion_labels_data = np.reshape(np.array(el.getLesionLabels(),
                                     dtype=np.int32), dimensions, 'F')
     
-    score_data = np.reshape(np.array(el.getLesionScore(),
+    lesion_score_data = np.reshape(np.array(el.getLesionScore(),
                                     dtype=np.float32), dimensions, 'F')
     
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
-    header['cal_max'] = np.nanmax(reg_data)
-    reg = nb.Nifti1Image(reg_data, affine, header)
+    header['cal_max'] = np.nanmax(lesion_prior_data)
+    lesion_prior = nb.Nifti1Image(lesion_prior_data, affine, header)
 
-    header['cal_max'] = np.nanmax(legSize_data)
-    legSize = nb.Nifti1Image(legSize_data, affine, header)
+    header['cal_max'] = np.nanmax(lesion_size_data)
+    lesion_size = nb.Nifti1Image(lesion_size_data, affine, header)
 
-    header['cal_max'] = np.nanmax(legProb_data)
-    legProb = nb.Nifti1Image(legProb_data, affine, header)
+    header['cal_max'] = np.nanmax(lesion_proba_data)
+    lesion_proba = nb.Nifti1Image(lesion_proba_data, affine, header)
 
-    header['cal_max'] = np.nanmax(bound_data)
-    bound = nb.Nifti1Image(bound_data, affine, header)
+    header['cal_max'] = np.nanmax(lesion_pv_data)
+    lesion_pv = nb.Nifti1Image(lesion_pv_data, affine, header)
     
-    header['cal_max'] = np.nanmax(label_data)
-    label = nb.Nifti1Image(label_data, affine, header)
+    header['cal_max'] = np.nanmax(lesion_labels_data)
+    lesion_labels = nb.Nifti1Image(lesion_labels_data, affine, header)
     
-    header['cal_max'] = np.nanmax(score_data)
-    score = nb.Nifti1Image(score_data, affine, header)
+    header['cal_max'] = np.nanmax(lesion_score_data)
+    lesion_score = nb.Nifti1Image(lesion_score_data, affine, header)
 
     if save_data:
-        save_volume(os.path.join(output_dir, reg_file), reg)
-        save_volume(os.path.join(output_dir, legSize_file), legSize)
-        save_volume(os.path.join(output_dir, legProb_file), legProb)
-        save_volume(os.path.join(output_dir, bound_file), bound)
-        save_volume(os.path.join(output_dir, label_file), label)
-        save_volume(os.path.join(output_dir, score_file), score)
+        save_volume(os.path.join(output_dir, lesion_prior_file), lesion_prior)
+        save_volume(os.path.join(output_dir, lesion_size_file), lesion_size)
+        save_volume(os.path.join(output_dir, lesion_proba_file), lesion_proba)
+        save_volume(os.path.join(output_dir, lesion_pv_file), lesion_pv)
+        save_volume(os.path.join(output_dir, lesion_labels_file), lesion_labels)
+        save_volume(os.path.join(output_dir, lesion_score_file), lesion_score)
 
-    return {'region': reg, 'lesion_size': legSize,
-            'lesion_proba': legProb, 'boundary': bound,
-            'label': label, 'score': score}
+    return {'lesion_prior': lesion_prior, 'lesion_size': lesion_size,
+            'lesion_proba': lesion_proba, 'lesion_pv': lesion_pv,
+            'lesion_labels': lesion_labels, 'lesion_score': lesion_score}
