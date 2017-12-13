@@ -3,8 +3,8 @@ import nibabel as nb
 import os
 import sys
 import cbstools
-from nighres.io import load_volume, save_volume
-from nighres.utils import _output_dir_4saving, _fname_4saving, \
+from ..io import load_volume, save_volume
+from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_atlas_file
 
 
