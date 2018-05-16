@@ -1,2 +1,3 @@
 from filter_ridge_structures import filter_ridge_structures
 from bandpass_filtering import bandpass_filtering
+from recursive_ridge_diffusion import recursive_ridge_diffusion
