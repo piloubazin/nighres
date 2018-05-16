@@ -7,19 +7,14 @@ Extraction launcher interface
 
 import sys
 import os
+import pickle
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-#from ginnipi import mainUI, about, configuration_form
 from nighres.lesion_tool.interface import Ui_LesionTool
 from nighres.lesion_tool.lesion_pipeline import Lesion_extractor
 import subprocess
-
-#import ginnipi
-#from ginnipi.toolbox.xnat import CurlXnat
-#from ginnipi.toolbox.utilities import tstamp, mkdir_p
-#from ginnipi.pipeline import Pipeline, AbaciConfiguration
 
 class LesionTool(QMainWindow, Ui_LesionTool):
     '''
@@ -35,8 +30,18 @@ class LesionTool(QMainWindow, Ui_LesionTool):
         self.setupUi(self)
         self.connectActions()
         
+        self.grid_selector.addItems(QStringList(['',
+                                                 'normal',
+                                                 'highmem',
+                                                 'gindev']))
+        
+        self.SubjectWidget.setHorizontalHeaderItem(1,  QTableWidgetItem(""))
+        self.SubjectWidget.setHorizontalHeaderItem(1,  QTableWidgetItem("Subject"))
+        self.SubjectWidget.setColumnWidth(0, 30)
+        self.SubjectWidget.setColumnWidth(1, 100)
+        
         # set current directory as working directory by default
-        #self.workDir.setText(QString(os.path.abspath('.')))
+        self.workDir.setText(QString(os.path.abspath('.')))
         
    
     def connectActions(self):
@@ -45,64 +50,30 @@ class LesionTool(QMainWindow, Ui_LesionTool):
         Connecting the buttons and widgets with various methods
         '''
         # buttons,checkboxes
-        #self.connectButton.clicked.connect(self.xnatConnect)
-        #self.disconnectButton.clicked.connect(self.xnatDisconnect)
-        # use lambda function when specifying arguments:
-        #self.projectsListWidget.itemClicked.connect(lambda: self.fetchExperiments(str(self.projectsListWidget.currentItem().text())))        #QObject.connect(self.projectsListWidget,SIGNAL("clicked(QModelIndex)",lambda: self.fetchExperiments(self.projectsListModel)))
-        #self.selectAll.clicked.connect(self.selectAllExperiments)
-        #self.unselectAll.clicked.connect(self.unselectAllExperiments)
-        #self.selectionToggle.clicked.connect(self.toggleExperiments)
-        #self.destroyed.connect(self.xnatDisconnect)
-        #self.pipelinesSelector.activated.connect(self.setupPipeline)
+        self.selectAll.clicked.connect(self.selectAllExperiments)
+        self.unselectAll.clicked.connect(self.unselectAllExperiments)
+        self.selectionToggle.clicked.connect(self.toggleExperiments)
+
         self.runButton.clicked.connect(self.extract)
-         
-         
-        # Menu bar
-        #self.actionConfigure.triggered.connect(self.editConfiguration)
-        #self.actionAbout.triggered.connect(self.displayAbout)
-        #self.actionQuit.triggered.connect(self.xnatDisconnect)
+                
+        self.pushButton_loadInputDir.clicked.connect(self.loadSubjects)
+        
         self.actionQuit.triggered.connect(app.exit)
-        
-        # T1 selector
-        mainSelector = QFileDialog(parent=self,
-                                    caption=QString('Pick a T1 image ...'),
-                                    directory=QString('/')
-                                )
-        mainSelector.setFileMode(QFileDialog.AnyFile)
-        self.connect(mainSelector,SIGNAL('fileSelected(QString)'), self.main,SLOT('setText(QString)'))
-        self.pushButton_main.clicked.connect(mainSelector.exec_)
-        
-        # FLAIR selector
-        accSelector = QFileDialog(parent=self,
-                                    caption=QString('Pick a FLAIR image ...'),
-                                    directory=QString('/')
-                                )
-        accSelector.setFileMode(QFileDialog.AnyFile)
-        self.connect(accSelector,SIGNAL('fileSelected(QString)'), self.acc,SLOT('setText(QString)'))
-        self.pushButton_acc.clicked.connect(accSelector.exec_)
         
         # InputDir selector
         inputdirSelector = QFileDialog(parent=self,
                                       caption=QString('Select the directory where belong the subjects ...'),
-                                      directory=QString(os.getenv('HOME')))
+                                      directory=QString(os.getenv('HOME'))
+                                      )
         inputdirSelector.setFileMode(QFileDialog.DirectoryOnly)
         self.connect(inputdirSelector,SIGNAL('fileSelected(QString)'), self.inputDir,SLOT('setText(QString)'))
         self.pushButton_inputDir.clicked.connect(inputdirSelector.exec_)
         
-        # SUBJECTS text selector
-        subfileSelector = QFileDialog(parent=self,
-                                    caption=QString('Pick a list of subjects (.txt) ...'),
-                                    directory=QString('/')
-                                )
-        subfileSelector.setFileMode(QFileDialog.AnyFile)
-        self.connect(subfileSelector,SIGNAL('fileSelected(QString)'), self.subfile,SLOT('setText(QString)'))
-        self.pushButton_subfile.clicked.connect(subfileSelector.exec_)
-        
         # Atlas selector
         atlasSelector = QFileDialog(parent=self,
                                     caption=QString('Pick the atlas file for brain segmentation ...'),
-                                    directory=QString('/')
-                                )
+                                    directory=QString(os.getenv('HOME'))
+                                    )
         atlasSelector.setFileMode(QFileDialog.AnyFile)
         self.connect(atlasSelector,SIGNAL('fileSelected(QString)'), self.atlas,SLOT('setText(QString)'))
         self.pushButton_atlas.clicked.connect(atlasSelector.exec_)
@@ -110,12 +81,69 @@ class LesionTool(QMainWindow, Ui_LesionTool):
         # Workdir selector
         workdirSelector = QFileDialog(parent=self,
                                       caption=QString('Select the working directory...'),
-                                      directory=QString(os.getenv('HOME')))
+                                      directory=QString(os.getenv('HOME'))
+                                      )
         workdirSelector.setFileMode(QFileDialog.DirectoryOnly)
         self.connect(workdirSelector,SIGNAL('fileSelected(QString)'), self.workDir,SLOT('setText(QString)'))
         self.pushButton_workDir.clicked.connect(workdirSelector.exec_)
     
-     
+    def loadSubjects(self):
+        '''
+        Load contents of input folder for BIDS structure.
+        This function is more or less a mix between xnatConnect and fetchExperiments.
+        '''
+        folder = str(self.inputDir.text())
+        if os.path.isdir(folder):
+            subjects = os.listdir(folder)
+            project = folder.split("/")[-1]
+            if project == "":
+                project = folder.split("/")[-2]
+                
+            self.SubjectWidget.setColumnCount(2)
+            self.SubjectWidget.setRowCount(len(subjects))
+            
+            r = 0
+            for subject in subjects : 
+                item = QTableWidgetItem()
+                item.setCheckable = True
+                item.setCheckState(Qt.Checked)                
+                self.SubjectWidget.setItem(r,0, item)
+                self.SubjectWidget.setItem(r,1, QTableWidgetItem(subject))
+                r += 1
+            self.SubjectWidget.show()
+            self.statusBar.showMessage('Retrieved '+str(r)+' subjects')
+        else:
+            self.statusBar.showMessage('Failed to find any subject in this folder')
+            pass
+    
+    def selectAllExperiments(self):
+        '''
+        Mark all experiments as checked
+        '''
+        for i in range(0,self.SubjectWidget.rowCount()):
+            self.SubjectWidget.item(i,0).setCheckState(Qt.Checked)
+        return 
+    
+    def unselectAllExperiments(self):
+        '''
+        Mark all experiments as unchecked
+        '''
+        for i in range(0,self.SubjectWidget.rowCount()):
+            self.SubjectWidget.item(i,0).setCheckState(Qt.Unchecked)
+        return 
+    
+    def toggleExperiments(self):
+        '''
+        Mark all experiments as unchecked if checked and vice versa
+        '''
+        rows=list(set([i.row() for i in self.SubjectWidget.selectedIndexes()]))
+        if all([self.SubjectWidget.item(row,0).checkState()==Qt.Checked for row in rows]):
+            for i in rows:
+                self.SubjectWidget.item(i,0).setCheckState(Qt.Unchecked)
+        else:
+            for i in rows:
+                self.SubjectWidget.item(i,0).setCheckState(Qt.Checked)    
+        return
              
     def extract(self):
         '''
@@ -129,19 +157,23 @@ class LesionTool(QMainWindow, Ui_LesionTool):
         wf_name = str(self.name.text())
         base_dir = str(self.workDir.text())
         input_dir = str(self.inputDir.text())
-        subjects = str(self.subfile.text())
-        main = str(self.main.text())
-        acc = str(self.acc.text())
-        atlas = str(self.atlas.text())
         
+        idxes = range(self.SubjectWidget.rowCount())
+        rows = list(set([idx for idx in idxes if self.SubjectWidget.item(idx,0).checkState()==Qt.Checked] ))
+        subjects = list([str(self.SubjectWidget.item(row,1).text()) for row in rows])
+        pickle.dump( subjects, open( "subjects.pkl", "wb" ) )
+        
+        atlas = str(self.atlas.text())
+        grid = str(self.grid_selector.currentText())
+
         try:
-            subprocess.call(['exec.py',wf_name,base_dir,input_dir,subjects,main,acc,atlas]) 
             #wf.run('SLURM',plugin_args={'sbatch_args': '-p gindev'})
+            subprocess.call(['exec.py',wf_name,base_dir,input_dir,"subjects.pkl",atlas,grid]) 
+            print('Extraction ran successfully')
+            
         except:
             print("Erreur système, autodestruction dans 3 , 2 , 1 ...")
                
-
-
 
 
 if __name__=='__main__':

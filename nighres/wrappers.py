@@ -18,8 +18,8 @@ class MGDMSegmentationInputSpec(BaseInterfaceInputSpec):
     contrast_type1  = traits.Str(argstr='%s', desc='type of the image number one', mandatory=True)
     contrast_image2 = File(exists=True, argstr="%s", desc='specify a second contrast image (optionnal)')
     contrast_type2  = traits.Str(argstr='%s', desc='type of the image number two')
-    #contrast_image3 = File(exists=True, argstr="%s", desc='specify a third contrast image (optionnal)')
-    #contrast_type3  = traits.Str(argstr='%s', desc='type of the image number three')
+    contrast_image3 = File(exists=True, argstr="%s", desc='specify a third contrast image (optionnal)')
+    contrast_type3  = traits.Str(argstr='%s', desc='type of the image number three')
     #contrast_image4 = File(exists=True, argstr="%s", desc='specify a fourth contrast image (optionnal)')
     #contrast_type4  = traits.Str(argstr='%s', desc='type of the image number four')
     
@@ -55,6 +55,8 @@ class MGDMSegmentation(BaseInterface):
                           contrast_type1 = self.inputs.contrast_type1,
                           contrast_image2 = self.inputs.contrast_image2,
                           contrast_type2 = self.inputs.contrast_type2,
+                          contrast_image3 = self.inputs.contrast_image3,
+                          contrast_type3 = self.inputs.contrast_type3,
                           atlas_file = self.inputs.atlas_file,
                           save_data = self.inputs.save_data,
                           output_dir = self.inputs.output_dir)
@@ -168,7 +170,7 @@ class DefineMultiRegionPriorsInputSpec(BaseInterfaceInputSpec):
     levelset_boundary_image = File(exists=True, desc='specify a levelset boundary image', mandatory=True)
     atlas_file = File(exists=True, desc='Path to plain text atlas file', mandatory=True)
     #defined_region = traits.Str(argstr='%s', desc='output directory', mandatory=True)
-    definition_method = traits.Str(argstr='%s', desc='output directory', mandatory=True)
+    #definition_method = traits.Str(argstr='%s', desc='output directory', mandatory=True)
     distance_offset = traits.Float(desc='partial voluming distance',mandatory=True)
     save_data = traits.Bool(True, desc='Save output data to file', usedefault=True)
     output_dir = traits.Str(argstr='%s', desc='output directory', mandatory=True)
@@ -192,7 +194,7 @@ class DefineMultiRegionPriors(BaseInterface):
                                    levelset_boundary_image = self.inputs.levelset_boundary_image,
                                    atlas_file = self.inputs.atlas_file,
                                    #defined_region = self.inputs.defined_region,
-                                   definition_method = self.inputs.definition_method,
+                                   #definition_method = self.inputs.definition_method,
                                    distance_offset = self.inputs.distance_offset,
                                    save_data = self.inputs.save_data,
                                    output_dir = self.inputs.output_dir)
@@ -214,11 +216,12 @@ class RecursiveRidgeDiffusionInputSpec(BaseInterfaceInputSpec):
     input_image = File(exists=True, desc='specify an input image', mandatory=True)
     ridge_intensities = traits.Str(argstr='%s', desc='ridge intensities', mandatory=True)
     ridge_filter = traits.Str(argstr='%s', desc='ridge filter', mandatory=True)
-    surface_levelset = File(exists=True, desc='specify a distance image', mandatory=True)
+    surface_levelset = File(exists=True, desc='specify a distance image')
     orientation = traits.Str(argstr='%s', desc='orientation', mandatory=True)
     ang_factor = traits.Float(desc='angular factor',mandatory=True)
     loc_prior = File(exists=True, desc='specify a location prior image')
-    nb_scales = traits.Int(desc='number of scales', mandatory=True)
+    min_scale = traits.Int(desc='minimum scale', mandatory=True)
+    max_scale = traits.Int(desc='maximum scale', mandatory=True)
     propagation_model = traits.Str(argstr='%s', desc='propagation model', mandatory=True)
     diffusion_factor = traits.Float(desc='diffusion factor',mandatory=True)
     similarity_scale = traits.Float(desc='similarity scale',mandatory=True)
@@ -232,6 +235,7 @@ class RecursiveRidgeDiffusionInputSpec(BaseInterfaceInputSpec):
 
 class RecursiveRidgeDiffusionOutputSpec(TraitedSpec):
     
+    ridge_pv = File(exists=True, desc="")
     filter = File(exists=True, desc="")
     proba = File(exists=True, desc="")
     propagation = File(exists=True, desc="")
@@ -254,7 +258,8 @@ class RecursiveRidgeDiffusion(BaseInterface):
                                   orientation = self.inputs.orientation,
                                   ang_factor = self.inputs.ang_factor,
                                   loc_prior = self.inputs.loc_prior,
-                                  nb_scales = self.inputs.nb_scales,
+                                  min_scale = self.inputs.min_scale,
+                                  max_scale = self.inputs.max_scale,
                                   propagation_model = self.inputs.propagation_model,
                                   diffusion_factor = self.inputs.diffusion_factor,
                                   similarity_scale = self.inputs.similarity_scale,
@@ -269,6 +274,7 @@ class RecursiveRidgeDiffusion(BaseInterface):
         outputs = self._outputs().get()
         fname = self.inputs.input_image
         path, base, ext = split_filename(fname)
+        outputs["ridge_pv"] = os.path.abspath(base + '_rrd_pv.nii.gz')
         outputs["filter"] = os.path.abspath(base + '_rrd_filter.nii.gz')
         outputs["proba"] = os.path.abspath(base + '_rrd_proba.nii.gz')
         outputs["propagation"] = os.path.abspath(base + '_rrd_propag.nii.gz')

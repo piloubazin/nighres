@@ -9,8 +9,8 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 from colorama.ansi import Back
 
 def define_multi_region_priors(segmentation_image,levelset_boundary_image,
-                               atlas_file, #defined_region,
-                               definition_method, distance_offset,
+                               atlas_file, #defined_region, definition_method,
+                               distance_offset,
                                save_data=False, output_dir=None,
                                file_name=None):
     
@@ -89,7 +89,7 @@ def define_multi_region_priors(segmentation_image,levelset_boundary_image,
     # set erc parameters
     dmrp.setAtlasFile(atlas_file)
     #dmrp.setDefinedRegion(defined_region)
-    dmrp.setDefinitionMethod(definition_method)
+    #dmrp.setDefinitionMethod(definition_method)
     dmrp.setDistanceOffset(distance_offset)
 
     # load segmentation image and use it to set dimensions and resolution

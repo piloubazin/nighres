@@ -8,11 +8,11 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_atlas_file
 
 
-def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
-                              surface_levelset,orientation, ang_factor, loc_prior, 
-                              nb_scales, propagation_model, diffusion_factor, 
+def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter, surface_levelset,
+                              orientation, ang_factor, loc_prior, min_scale, 
+                              max_scale, propagation_model, diffusion_factor, 
                               similarity_scale, neighborhood_size,
-                              max_iter,max_diff,
+                              max_iter, max_diff,
                               save_data=False, output_dir=None,
                               file_name=None):
     
@@ -36,7 +36,9 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
 
 	loc_prior:
 	
-	nb_scales:
+	min_scale:
+	
+    max_scale:
 
 	propagation_model:
 
@@ -82,6 +84,10 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     if save_data:
         output_dir = _output_dir_4saving(output_dir, input_image)
 
+        ridge_pv_file = _fname_4saving(file_name=file_name,
+                                  rootfile=input_image,
+                                  suffix='rrd_pv')
+
         filter_file = _fname_4saving(file_name=file_name,
                                   rootfile=input_image,
                                   suffix='rrd_filter')
@@ -123,7 +129,8 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     rrd.setRidgeFilter(ridge_filter)
     rrd.setOrientationToSurface(orientation)
     rrd.setAngularFactor(ang_factor)
-    rrd.setNumberOfScales(nb_scales)
+    rrd.setMinimumScale(min_scale)
+    rrd.setMaximumScale(max_scale)
     rrd.setPropagationModel(propagation_model)
     rrd.setDiffusionFactor(diffusion_factor)
     rrd.setSimilarityScale(similarity_scale)
@@ -146,13 +153,19 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     # input input_image
     rrd.setInputImage(cbstools.JArray('float')((data.flatten('F')).astype(float)))
 
-    # input surface_levelset
-    data = load_volume(surface_levelset).get_data()
-    rrd.setSurfaceLevelSet(cbstools.JArray('float')((data.flatten('F')).astype(float)))
+    # input surface_levelset : dirty fix for the case where surface image not input
+    try:
+        data = load_volume(surface_levelset).get_data()
+        rrd.setSurfaceLevelSet(cbstools.JArray('float')((data.flatten('F')).astype(float)))
+    except:
+        print("no surface image")
     
-    # input location prior image
-    data = load_volume(loc_prior).get_data()
-    rrd.setLocationPrior(cbstools.JArray('float')((data.flatten('F')).astype(float)))
+    # input location prior image : loc_prior is optional
+    try:
+        data = load_volume(loc_prior).get_data()
+        rrd.setLocationPrior(cbstools.JArray('float')((data.flatten('F')).astype(float)))
+    except:
+        print("no location prior image")
     
     
     # execute Extraction
@@ -167,6 +180,9 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
         return
 
     # reshape output to what nibabel likes
+    ridge_pv_data = np.reshape(np.array(rrd.getRidgePartialVolumeImage(),
+                                   dtype=np.float32), dimensions, 'F')
+        
     filter_data = np.reshape(np.array(rrd.getFilterResponseImage(),
                                    dtype=np.float32), dimensions, 'F')
 
@@ -191,6 +207,9 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
+    header['cal_max'] = np.nanmax(ridge_pv_data)
+    ridge_pv = nb.Nifti1Image(ridge_pv_data, affine, header)
+    
     header['cal_max'] = np.nanmax(filter_data)
     filter = nb.Nifti1Image(filter_data, affine, header)
 
@@ -213,6 +232,7 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     ridge_size = nb.Nifti1Image(ridge_size_data, affine, header)
 
     if save_data:
+        save_volume(os.path.join(output_dir, ridge_pv_file), ridge_pv)
         save_volume(os.path.join(output_dir, filter_file), filter)
         save_volume(os.path.join(output_dir, proba_file), proba)
         save_volume(os.path.join(output_dir, propagation_file), propagation)
@@ -221,6 +241,6 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
         save_volume(os.path.join(output_dir, correction_file), correction)
         save_volume(os.path.join(output_dir, ridge_size_file), ridge_size)
 
-    return {'filter': filter, 'proba': proba,
+    return {'ridge_pv': ridge_pv, 'filter': filter, 'proba': proba,
             'propagation': propagation, 'scale': scale,
             'ridge_direction': ridge_direction, 'correction': correction, 'ridge_size': ridge_size}
