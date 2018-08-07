@@ -1,5 +1,6 @@
 
-import os, _cbstools
+import os
+from . import _cbstools
 
 __dir__ = os.path.abspath(os.path.dirname(__file__))
 
@@ -9,7 +10,7 @@ class JavaError(Exception):
   def __str__(self):
     writer = StringWriter()
     self.getJavaException().printStackTrace(PrintWriter(writer))
-    return "\n".join((super(JavaError, self).__str__(), "    Java stacktrace:", str(writer)))
+    return "\n".join((str(super(JavaError, self)), "    Java stacktrace:", str(writer)))
 
 class InvalidArgsError(Exception):
   pass
@@ -20,4 +21,4 @@ CLASSPATH = os.pathsep.join(CLASSPATH)
 _cbstools.CLASSPATH = CLASSPATH
 _cbstools._set_function_self(_cbstools.initVM, _cbstools)
 
-from _cbstools import *
+from ._cbstools import *

@@ -1,1 +1,1 @@
-from mgdm_cells import mgdm_cells
+from .mgdm_cells import mgdm_cells

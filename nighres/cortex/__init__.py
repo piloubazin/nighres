@@ -1,1 +1,1 @@
-from cruise_cortex_extraction import cruise_cortex_extraction
+from .cruise_cortex_extraction import cruise_cortex_extraction
