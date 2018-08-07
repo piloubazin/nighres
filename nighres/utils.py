@@ -1,6 +1,6 @@
 import os
 import warnings
-from global_settings import TOPOLOGY_LUT_DIR, ATLAS_DIR, DEFAULT_ATLAS
+from .global_settings import TOPOLOGY_LUT_DIR, ATLAS_DIR, DEFAULT_ATLAS
 
 
 def _output_dir_4saving(output_dir=None, rootfile=None):

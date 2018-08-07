@@ -58,7 +58,7 @@ def extract_brain_region(segmentation, levelset_boundary,
     ----------
     dict
         Dictionary collecting outputs under the following keys
-        (suffix of output files in brackets, # stands for shorthand names of 
+        (suffix of output files in brackets, # stands for shorthand names of
         the different extracted regions, respectively:
         rcr, lcr, cr, cb, cbs, sub, an, fn)
 
@@ -144,7 +144,7 @@ def extract_brain_region(segmentation, levelset_boundary,
     except:
         # if the Java module fails, reraise the error it throws
         print("\n The underlying Java code did not execute cleanly: ")
-        print sys.exc_info()[0]
+        print(sys.exc_info()[0])
         raise
         return
 

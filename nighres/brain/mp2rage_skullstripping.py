@@ -139,7 +139,7 @@ def mp2rage_skullstripping(second_inversion, t1_weighted=None, t1_map=None,
     except:
         # if the Java module fails, reraise the error it throws
         print("\n The underlying Java code did not execute cleanly: ")
-        print sys.exc_info()[0]
+        print(sys.exc_info()[0])
         raise
         return
 

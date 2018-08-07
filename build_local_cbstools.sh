@@ -12,8 +12,8 @@ fatal() { echo -e "$1"; exit 1; }
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
 # define here the local folders for your installation of CBSTools and Nighres
-cbstools_local="/home/pilou/Code/github/cbstools-public"
-nighres_local="/home/pilou/Code/github/nighres"
+cbstools_local="/data/pt_gr_weiskopf_machine_learning/kthierbach/projects/src/cbstools-public"
+nighres_local="/data/pt_gr_weiskopf_machine_learning/kthierbach/projects/src/nighres"
 
 # Check the system has the necessary commands
 hash wget tar javac jar python pip 2>/dev/null || fatal "This script needs the following commands available: wget tar javac jar python pip"
@@ -35,7 +35,7 @@ export JAVA_HOME=${JAVA_HOME:-"$detected_home"}
 
 # Attempt to check for python development headers
 # Inspired by https://stackoverflow.com/a/4850603
-python_include_path=$(python -c "from distutils import sysconfig as s; print s.get_config_vars()['INCLUDEPY']")
+python_include_path=$(python -c "from distutils import sysconfig as s; print(s.get_config_vars()['INCLUDEPY'])")
 test -f "${python_include_path}/Python.h" || fatal 'This script requires python development headers.\nInstall with `apt-get install python-dev`, or \n             `apt-get install python3-dev`, or equivalent'
 
 #
