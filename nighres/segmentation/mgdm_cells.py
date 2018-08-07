@@ -15,6 +15,7 @@ def mgdm_cells(contrast_image1, contrast_type1,
                       force_weight=0.6, curvature_weight=0.3,
                       cell_threshold=0.1,
                       max_iterations=200, min_change=0.0001,
+                      with_numpy=False,
                       topology='wcs', topology_lut_dir=None,
                       save_data=False, output_dir=None,
                       file_name=None):
@@ -28,19 +29,19 @@ def mgdm_cells(contrast_image1, contrast_type1,
     contrast_image1: niimg
         First input image to perform segmentation on
     contrast_type1: str
-        Contrast type of first input image, must be in {"centroid-proba", 
+        Contrast type of first input image, must be in {"centroid-proba",
         "local-maxima","foreground-proba","image-intensities"}
     contrast_image2: niimg, optional
         Additional input image to inform segmentation, must be in the same
         space as constrast_image1, requires contrast_type2
     contrast_type2: str, optional
-        Contrast type of second input image, must be in {"centroid-proba", 
+        Contrast type of second input image, must be in {"centroid-proba",
         "local-maxima","foreground-proba","image-intensities"}
     contrast_image3: niimg, optional
         Additional input image to inform segmentation, must be in the same
         space as constrast_image1, requires contrast_type3
     contrast_type3: str, optional
-        Contrast type of third input image, must be in {"centroid-proba", 
+        Contrast type of third input image, must be in {"centroid-proba",
         "local-maxima","foreground-proba","image-intensities"}
     stack_dimension: {'2D','3D'}, optional
         Dimension of the data for processing, either a stack of independent
@@ -50,8 +51,11 @@ def mgdm_cells(contrast_image1, contrast_type1,
         to 1 for quick testing of registration of priors, which does not
         perform true segmentation)
     min_change: float, optional
-        Minimum amount of change in the segmentation for MGDM to stop 
+        Minimum amount of change in the segmentation for MGDM to stop
         (default is 0.001)
+    with_numpy: bool
+        Images are served as numpy arrays to the function and results are returned
+        as numpy arrays too. Saving data is not supported with this option turned on!
     force_weight: float, optional
         Forces to drive MGDM to cell boundaries
         (default is 0.5)
@@ -104,7 +108,7 @@ def mgdm_cells(contrast_image1, contrast_type1,
 
     # check topology_lut_dir and set default if not given
     topology_lut_dir = _check_topology_lut_dir(topology_lut_dir)
-  
+
     # sanity check contrast types
     contrasts = [contrast_image1, contrast_image2, contrast_image3]
     ctypes = [contrast_type1, contrast_type2, contrast_type3]
@@ -141,66 +145,100 @@ def mgdm_cells(contrast_image1, contrast_type1,
     mgdm.setDataWeight(force_weight)
     mgdm.setCurvatureWeight(curvature_weight)
     mgdm.setCellThreshold(cell_threshold)
-    
+
     mgdm.setTopology(topology)
 
     # load contrast image 1 and use it to set dimensions and resolution
-    img = load_volume(contrast_image1)
-    data = img.get_data()
-    affine = img.get_affine()
-    header = img.get_header()
-    resolution = [x.item() for x in header.get_zooms()]
-    dimensions = data.shape
+    if with_numpy:#input and output are numpy arrays
+        dimensions = contrast_image1.shape
+        mgdm.setDimensions(dimensions[0], dimensions[1], dimensions[2])
+        mgdm.setResolutions(1., 1., 1.) #resolution is expected to be isotropic as there is no information in a numpy array
 
-    mgdm.setDimensions(dimensions[0], dimensions[1], dimensions[2])
-    mgdm.setResolutions(resolution[0], resolution[1], resolution[2])
+        # input image 1
+        mgdm.setContrastImage1(cbstools.JArray('float')((contrast_image1.flatten('F')).astype(float)))
+        mgdm.setContrastType1(contrast_type1)
 
-    # input image 1
-    mgdm.setContrastImage1(cbstools.JArray('float')(
-                                            (data.flatten('F')).astype(float)))
-    mgdm.setContrastType1(contrast_type1)
+        # if further contrast are specified, input them
+        if contrast_image2 is not None:
+            mgdm.setContrastImage2(cbstools.JArray('float')((contrast_image2.flatten('F')).astype(float)))
+            mgdm.setContrastType2(contrast_type2)
 
-    # if further contrast are specified, input them
-    if contrast_image2 is not None:
-        data = load_volume(contrast_image2).get_data()
-        mgdm.setContrastImage2(cbstools.JArray('float')(
-                                            (data.flatten('F')).astype(float)))
-        mgdm.setContrastType2(contrast_type2)
+            if contrast_image3 is not None:
+                mgdm.setContrastImage3(cbstools.JArray('float')((contrast_image3.flatten('F')).astype(float)))
+                mgdm.setContrastType3(contrast_type3)
 
-        if contrast_image3 is not None:
-            data = load_volume(contrast_image3).get_data()
-            mgdm.setContrastImage3(cbstools.JArray('float')(
-                                            (data.flatten('F')).astype(float)))
-            mgdm.setContrastType3(contrast_type3)
+        # execute MGDM
+        try:
+            mgdm.execute()
 
-    # execute MGDM
-    try:
-        mgdm.execute()
+        except:
+            # if the Java module fails, reraise the error it throws
+            print("\n The underlying Java code did not execute cleanly: ")
+            print(sys.exc_info()[0])
+            raise
+            return
 
-    except:
-        # if the Java module fails, reraise the error it throws
-        print("\n The underlying Java code did not execute cleanly: ")
-        print sys.exc_info()[0]
-        raise
-        return
+        # reshape output to what nibabel likes
+        seg = np.reshape(np.array(mgdm.getSegmentedImage(),dtype=np.int32), dimensions, 'F')
+        dist = np.reshape(np.array(mgdm.getLevelsetBoundaryImage(),dtype=np.float32), dimensions, 'F')
 
-    # reshape output to what nibabel likes
-    seg_data = np.reshape(np.array(mgdm.getSegmentedImage(),
-                                   dtype=np.int32), dimensions, 'F')
+    else: #input are nifti files
+        img = load_volume(contrast_image1)
+        data = img.get_data()
+        affine = img.get_affine()
+        header = img.get_header()
+        resolution = [x.item() for x in header.get_zooms()]
+        dimensions = data.shape
 
-    dist_data = np.reshape(np.array(mgdm.getLevelsetBoundaryImage(),
-                                    dtype=np.float32), dimensions, 'F')
+        mgdm.setDimensions(dimensions[0], dimensions[1], dimensions[2])
+        mgdm.setResolutions(resolution[0], resolution[1], resolution[2])
 
-    # adapt header max for each image so that correct max is displayed
-    # and create nifiti objects
-    header['cal_max'] = np.nanmax(seg_data)
-    seg = nb.Nifti1Image(seg_data, affine, header)
+        # input image 1
+        mgdm.setContrastImage1(cbstools.JArray('float')(
+                                                (data.flatten('F')).astype(float)))
+        mgdm.setContrastType1(contrast_type1)
 
-    header['cal_max'] = np.nanmax(dist_data)
-    dist = nb.Nifti1Image(dist_data, affine, header)
+        # if further contrast are specified, input them
+        if contrast_image2 is not None:
+            data = load_volume(contrast_image2).get_data()
+            mgdm.setContrastImage2(cbstools.JArray('float')(
+                                                (data.flatten('F')).astype(float)))
+            mgdm.setContrastType2(contrast_type2)
 
-    if save_data:
-        save_volume(os.path.join(output_dir, seg_file), seg)
-        save_volume(os.path.join(output_dir, dist_file), dist)
+            if contrast_image3 is not None:
+                data = load_volume(contrast_image3).get_data()
+                mgdm.setContrastImage3(cbstools.JArray('float')(
+                                                (data.flatten('F')).astype(float)))
+                mgdm.setContrastType3(contrast_type3)
+
+        # execute MGDM
+        try:
+            mgdm.execute()
+
+        except:
+            # if the Java module fails, reraise the error it throws
+            print("\n The underlying Java code did not execute cleanly: ")
+            print(sys.exc_info()[0])
+            raise
+            return
+
+        # reshape output to what nibabel likes
+        seg_data = np.reshape(np.array(mgdm.getSegmentedImage(),
+                                       dtype=np.int32), dimensions, 'F')
+
+        dist_data = np.reshape(np.array(mgdm.getLevelsetBoundaryImage(),
+                                        dtype=np.float32), dimensions, 'F')
+
+        # adapt header max for each image so that correct max is displayed
+        # and create nifiti objects
+        header['cal_max'] = np.nanmax(seg_data)
+        seg = nb.Nifti1Image(seg_data, affine, header)
+
+        header['cal_max'] = np.nanmax(dist_data)
+        dist = nb.Nifti1Image(dist_data, affine, header)
+
+        if save_data:
+            save_volume(os.path.join(output_dir, seg_file), seg)
+            save_volume(os.path.join(output_dir, dist_file), dist)
 
     return {'segmentation': seg, 'distance': dist}
