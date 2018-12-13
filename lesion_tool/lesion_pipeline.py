@@ -93,9 +93,9 @@ def Lesion_extractor(name='Lesion_Extractor',
     #scanList.inputs.template = '%s/%s.nii'
     #scanList.inputs.template_args = {'T1': [['subject_id','T1*']], 
     #                                 'FLAIR': [['subject_id','FLAIR*']]}
-    scanList.inputs.template = '%s/%s/*.nii.gz'
-    scanList.inputs.template_args = {'T1': [['subject_id','main']], 
-                                     'FLAIR': [['subject_id','acc']]}  
+    scanList.inputs.template = '%s/anat/%s'
+    scanList.inputs.template_args = {'T1': [['subject_id','*_T1w.nii.gz']], 
+                                     'FLAIR': [['subject_id','*_FLAIR.nii.gz']]}  
     wf.connect(subjectList, "subject_id", scanList, "subject_id")
     
 #     # T1w and FLAIR
@@ -577,6 +577,24 @@ def Lesion_extractor(name='Lesion_Extractor',
     wf.connect(MGDM,'distance',extract_WMH,'levelset_boundary_image')
     wf.connect(AddVentHornsirn,'out_file',extract_WMH,'location_prior_image')
     
+    #===========================================================================
+    # extract_WMH2 = extract_WMH.clone(name='Extract_WMH2')
+    # extract_WMH2.inputs.gm_boundary_partial_vol_dist = 2.0
+    # wf.connect(subjectList,('subject_id',createOutputDir,wf.base_dir,wf.name,extract_WMH2.name),extract_WMH2,'output_dir')
+    # wf.connect(ERC2,'background_proba',extract_WMH2,'probability_image')
+    # wf.connect(MGDM,'segmentation',extract_WMH2,'segmentation_image')
+    # wf.connect(MGDM,'distance',extract_WMH2,'levelset_boundary_image')
+    # wf.connect(AddVentHornsirn,'out_file',extract_WMH2,'location_prior_image')
+    # 
+    # extract_WMH3 = extract_WMH.clone(name='Extract_WMH3')
+    # extract_WMH3.inputs.gm_boundary_partial_vol_dist = 3.0
+    # wf.connect(subjectList,('subject_id',createOutputDir,wf.base_dir,wf.name,extract_WMH3.name),extract_WMH3,'output_dir')
+    # wf.connect(ERC2,'background_proba',extract_WMH3,'probability_image')
+    # wf.connect(MGDM,'segmentation',extract_WMH3,'segmentation_image')
+    # wf.connect(MGDM,'distance',extract_WMH3,'levelset_boundary_image')
+    # wf.connect(AddVentHornsirn,'out_file',extract_WMH3,'location_prior_image')
+    #===========================================================================
+    
     '''
     ####################################
     ####     FINDING SMALL WMHs     ####
@@ -621,6 +639,24 @@ def Lesion_extractor(name='Lesion_Extractor',
     wf.connect(MGDM,'segmentation',extract_round_WMH,'segmentation_image')
     wf.connect(MGDM,'distance',extract_round_WMH,'levelset_boundary_image')
     wf.connect(AddVentHornsirn,'out_file',extract_round_WMH,'location_prior_image')
+    
+    #===========================================================================
+    # extract_round_WMH2 = extract_round_WMH.clone(name='Extract_round_WMH2')
+    # extract_round_WMH2.inputs.gm_boundary_partial_vol_dist = 2.0
+    # wf.connect(subjectList,('subject_id',createOutputDir,wf.base_dir,wf.name,extract_round_WMH2.name),extract_round_WMH2,'output_dir')
+    # wf.connect(round_WMH,'ridge_pv',extract_round_WMH2,'probability_image')
+    # wf.connect(MGDM,'segmentation',extract_round_WMH2,'segmentation_image')
+    # wf.connect(MGDM,'distance',extract_round_WMH2,'levelset_boundary_image')
+    # wf.connect(AddVentHornsirn,'out_file',extract_round_WMH2,'location_prior_image')
+    # 
+    # extract_round_WMH3 = extract_round_WMH.clone(name='Extract_round_WMH3')
+    # extract_round_WMH3.inputs.gm_boundary_partial_vol_dist = 2.0
+    # wf.connect(subjectList,('subject_id',createOutputDir,wf.base_dir,wf.name,extract_round_WMH3.name),extract_round_WMH3,'output_dir')
+    # wf.connect(round_WMH,'ridge_pv',extract_round_WMH3,'probability_image')
+    # wf.connect(MGDM,'segmentation',extract_round_WMH3,'segmentation_image')
+    # wf.connect(MGDM,'distance',extract_round_WMH3,'levelset_boundary_image')
+    # wf.connect(AddVentHornsirn,'out_file',extract_round_WMH3,'location_prior_image')
+    #===========================================================================
      
     '''
     ####################################
@@ -645,12 +681,47 @@ def Lesion_extractor(name='Lesion_Extractor',
     wf.connect(extract_WMH,'lesion_score',WMH,"in_file")
     wf.connect(extract_round_WMH,"lesion_score", WMH, "in_file2")
     
+    #===========================================================================
+    # WMH2 = Node(ImageMaths(), name="WMH2")
+    # WMH2.inputs.op_string = "-max"
+    # WMH2.inputs.out_file = "WMH2_map.nii.gz"
+    # wf.connect(extract_WMH2,'lesion_score',WMH2,"in_file")
+    # wf.connect(extract_round_WMH2,"lesion_score", WMH2, "in_file2")
+    # 
+    # WMH3 = Node(ImageMaths(), name="WMH3")
+    # WMH3.inputs.op_string = "-max"
+    # WMH3.inputs.out_file = "WMH3_map.nii.gz"
+    # wf.connect(extract_WMH3,'lesion_score',WMH3,"in_file")
+    # wf.connect(extract_round_WMH3,"lesion_score", WMH3, "in_file2")
+    #===========================================================================
+    
+    # Image calculator : multiply by boundnary partial volume
+    WMH_mul = Node(ImageMaths(), name="WMH_mul")
+    WMH_mul.inputs.op_string = "-mul"
+    WMH_mul.inputs.out_file = "final_mask.nii.gz"
+    wf.connect(WMH,"out_file", WMH_mul,"in_file")
+    wf.connect(MGDM,"distance", WMH_mul, "in_file2")
+    
+    #===========================================================================
+    # WMH2_mul = Node(ImageMaths(), name="WMH2_mul")
+    # WMH2_mul.inputs.op_string = "-mul"
+    # WMH2_mul.inputs.out_file = "final_mask.nii.gz"
+    # wf.connect(WMH2,"out_file", WMH2_mul,"in_file")
+    # wf.connect(MGDM,"distance", WMH2_mul, "in_file2")
+    # 
+    # WMH3_mul = Node(ImageMaths(), name="WMH3_mul")
+    # WMH3_mul.inputs.op_string = "-mul"
+    # WMH3_mul.inputs.out_file = "final_mask.nii.gz"
+    # wf.connect(WMH3,"out_file", WMH3_mul,"in_file")
+    # wf.connect(MGDM,"distance", WMH3_mul, "in_file2")
+    #===========================================================================
+    
     '''
     ##########################################
     ####      SEGMENTATION THRESHOLD      ####
     ##########################################
     A threshold of 0.5 is very conservative, because the final lesion score is the product of two probabilities.
-    This needs to be optimized to a value between 0.25 and 0.5 to balnce false negatives 
+    This needs to be optimized to a value between 0.25 and 0.5 to balance false negatives 
     (dominant at 0.5) and false positives (dominant at low values).
     '''
     
@@ -660,20 +731,76 @@ def Lesion_extractor(name='Lesion_Extractor',
     DVRS_mask.inputs.direction = "below"
     wf.connect(DVRS,"out_file", DVRS_mask, "in_file")
     
-    # Threshold binary mask : 
-    WMH_mask = Node(Threshold(), name="WMH_mask")
-    WMH_mask.inputs.thresh = 0.25
-    WMH_mask.inputs.direction = "below"
-    wf.connect(WMH,"out_file", WMH_mask, "in_file")
-
+    # Threshold binary mask : 025
+    WMH1_025 = Node(Threshold(), name="WMH1_025")
+    WMH1_025.inputs.thresh = 0.25
+    WMH1_025.inputs.direction = "below"
+    wf.connect(WMH_mul,"out_file", WMH1_025, "in_file")
+    
+    #===========================================================================
+    # WMH2_025 = Node(Threshold(), name="WMH2_025")
+    # WMH2_025.inputs.thresh = 0.25
+    # WMH2_025.inputs.direction = "below"
+    # wf.connect(WMH2_mul,"out_file", WMH2_025, "in_file")
+    # 
+    # WMH3_025 = Node(Threshold(), name="WMH3_025")
+    # WMH3_025.inputs.thresh = 0.25
+    # WMH3_025.inputs.direction = "below"
+    # wf.connect(WMH3_mul,"out_file", WMH3_025, "in_file")
+    #===========================================================================
+    
+    # Threshold binary mask : 050
+    WMH1_050 = Node(Threshold(), name="WMH1_050")
+    WMH1_050.inputs.thresh = 0.50
+    WMH1_050.inputs.direction = "below"
+    wf.connect(WMH_mul,"out_file", WMH1_050, "in_file")
+    
+    #===========================================================================
+    # WMH2_050 = Node(Threshold(), name="WMH2_050")
+    # WMH2_050.inputs.thresh = 0.50
+    # WMH2_050.inputs.direction = "below"
+    # wf.connect(WMH2_mul,"out_file", WMH2_050, "in_file")
+    # 
+    # WMH3_050 = Node(Threshold(), name="WMH3_050")
+    # WMH3_050.inputs.thresh = 0.50
+    # WMH3_050.inputs.direction = "below"
+    # wf.connect(WMH3_mul,"out_file", WMH3_050, "in_file")
+    #===========================================================================
+    
+    # Threshold binary mask : 075
+    WMH1_075 = Node(Threshold(), name="WMH1_075")
+    WMH1_075.inputs.thresh = 0.75
+    WMH1_075.inputs.direction = "below"
+    wf.connect(WMH_mul,"out_file", WMH1_075, "in_file")
+    
+    #===========================================================================
+    # WMH2_075 = Node(Threshold(), name="WMH2_075")
+    # WMH2_075.inputs.thresh = 0.75
+    # WMH2_075.inputs.direction = "below"
+    # wf.connect(WMH2_mul,"out_file", WMH2_075, "in_file")
+    # 
+    # WMH3_075 = Node(Threshold(), name="WMH3_075")
+    # WMH3_075.inputs.thresh = 0.75
+    # WMH3_075.inputs.direction = "below"
+    # wf.connect(WMH3_mul,"out_file", WMH3_075, "in_file")
+    #===========================================================================
+    
     ## Outputs
     
     DVRS_Output=Node(IdentityInterface(fields=['mask','region','lesion_size','lesion_proba','boundary','label','score']), name='DVRS_Output')
     wf.connect(DVRS_mask,'out_file',DVRS_Output,'mask')
     
     
-    WMH_output=Node(IdentityInterface(fields=['mask','lesion_prior','lesion_size','lesion_proba','boundary','label','score']), name='WMH_output')
-    wf.connect(WMH_mask,'out_file',WMH_output,'mask')
+    WMH_output=Node(IdentityInterface(fields=['mask1025','mask1050','mask1075','mask2025','mask2050','mask2075','mask3025','mask3050','mask3075']), name='WMH_output')
+    wf.connect(WMH1_025,'out_file',WMH_output,'mask1025')
+    #wf.connect(WMH2_025,'out_file',WMH_output,'mask2025')
+    #wf.connect(WMH3_025,'out_file',WMH_output,'mask3025')
+    wf.connect(WMH1_050,'out_file',WMH_output,'mask1050')
+    #wf.connect(WMH2_050,'out_file',WMH_output,'mask2050')
+    #wf.connect(WMH3_050,'out_file',WMH_output,'mask3050')
+    wf.connect(WMH1_075,'out_file',WMH_output,'mask1075')
+    #wf.connect(WMH2_075,'out_file',WMH_output,'mask2070')
+    #wf.connect(WMH3_075,'out_file',WMH_output,'mask3075')
 
 
     return wf
