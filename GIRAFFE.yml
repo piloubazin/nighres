@@ -4,5 +4,5 @@ tools:
     file:
       - giraffe/example_01_pipeline.pork
 nodes:
-- giraffe/notebooks/custom_nodes.json
+- giraffe/notebooks/nighres_nodes.json
 
