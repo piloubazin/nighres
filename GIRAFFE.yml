@@ -3,6 +3,6 @@ tools:
   porcupine:
     file:
       - giraffe/example_01_pipeline.pork
-nodes:
-- giraffe/notebooks/nighres_nodes.json
+    nodes:
+      - giraffe/notebooks/nighres_nodes.json
 
