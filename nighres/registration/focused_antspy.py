@@ -220,8 +220,6 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
     if isinstance(convergence,str):
         convergence = [convergence]
         
-        
-
     print('\nStep 1: Global Registration')
     step1 = embedded_antspy_multi(source_images, target_images,
                     run_rigid[0], rigid_iterations[0], run_affine[0], affine_iterations[0],
