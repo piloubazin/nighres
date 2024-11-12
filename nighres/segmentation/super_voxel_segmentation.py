@@ -155,9 +155,9 @@ def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4
     header['cal_max'] = np.nanmax(parcel_data)
     parcel = nb.Nifti1Image(parcel_data, affine, header)
 
-    dims = supervoxel.getScaledDims()
+    #dims = supervoxel.getScaledDims()
     seg_data = np.reshape(np.array(supervoxel.getSegmentationImage(),
-                                    dtype=np.int32), newshape=dims, order='F')
+                                    dtype=np.int32), newshape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
