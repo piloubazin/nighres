@@ -8,7 +8,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_available_memory
 
 
-def super_voxels(image, prior_seg, prior_proba, mask=None, scaling=4.0, noise_level=0.1, output_type='average',
+def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4.0, noise_level=0.1, output_type='average',
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Super Voxel Segmentation
