@@ -7,7 +7,7 @@ from ..io import load_volume, save_volume, load_mesh, save_mesh
 from ..utils import _output_dir_4saving, _fname_4saving,_check_available_memory
 
 
-def parcellation_smoothing(parcellation, probability=None, connectivity="wcs", 
+def parcellation_smoothing(parcellation, probability=None, connectivity="none", 
                      smoothing=1.0, distance=2.0,
                      save_data=False, overwrite=False,
                      output_dir=None, file_name=None):
@@ -23,8 +23,8 @@ def parcellation_smoothing(parcellation, probability=None, connectivity="wcs",
         Parcellation image to be regularized
     probability: niimg
         Probability image associated to the parcellation (certainty of the parcellation)
-    connectivity: {"6/18","6/26","18/6","26/6"}, optional
-        Choice of digital connectivity to build the mesh (default is 18/6)
+    connectivity: {"6/18","6/26","18/6","26/6",'wcs','none'}, optional
+        Choice of digital connectivity to build the mesh (default is "none")
     smoothing: float, optional
         Smoothing of the boundary, high values may bring distortions (default is 1.0)
     distance: float, optional
