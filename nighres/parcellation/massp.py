@@ -27,11 +27,28 @@ labels_27structures = ['Str-l','Str-r','STN-l','STN-r','SN-l','SN-r',\
                        'LH-l','LH-r','ac-lr','pc-lr','CHN-l','CHN-r',\
                        'DRN-lr','MRN-lr','RMG-lr','RPO-lr']
 
+labels_2p0 = ['Cau-l','Cau-r','STN-l','STN-r','SN-l','SN-r',\
+              'RN-l','RN-r','GPi-l','GPi-r','GPe-l','GPe-r',\
+              'Tha-l','Tha-r','LV-l','LV-r','3V','4V','Amg-l','Amg-r',\
+              'ic-l','ic-r','VTA-l','VTA-r','fx','PAG-l','PAG-r',\
+              'PPN-l','PPN-r','Cl-l','Cl-r','ICO-l','ICO-r','SCO-l','SCO-r',\
+              'LH-l','LH-r','Put-l','Put-r','Acc-l','Acc-r',\
+              'CA1-l','CA1-r','CA23-l','CA23-r','DG-l','DG-r',\
+              'Presub-l','Presub-r','Sub-l','Sub-r','Unc-l','Unc-r',\
+              'ac-lr','pc-lr','CHN-l','CHN-r',\
+              'DRN-lr','MRN-lr','LGN-l','LGN-r','MGN-l','MGN-r']
+
 def massp_17structures_label(name):
     return 1+labels_17structures.index(name)
 
 def massp_17structures_list():
     return labels_17structures
+ 
+def massp_2p0_label(name):
+    return 1+labels_2p0.index(name)
+
+def massp_2p0_list():
+    return labels_2p0
  
 def massp(target_images, structures=31,
                       shape_atlas_probas=None, shape_atlas_labels=None, 

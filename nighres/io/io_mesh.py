@@ -350,7 +350,7 @@ def _read_vtk(file):
     start_vertices = (vtk_df[vtk_df[0].str.contains(
                                             'POINTS')].index.tolist()[0]) + 1
     vertex_df = pd.read_csv(file, skiprows=range(start_vertices),
-                            nrows=number_vertices, delim_whitespace=True,
+                            nrows=number_vertices, sep='\s+',
                             header=None, engine='python')
     if np.array(vertex_df).shape[1] == 3:
         vertex_array = np.array(vertex_df)
@@ -359,7 +359,7 @@ def _read_vtk(file):
     elif np.array(vertex_df).shape[1] == 9:
         vertex_df = pd.read_csv(file, skiprows=range(start_vertices),
                                 nrows=int(number_vertices / 3) + 1,
-                                delim_whitespace=True, header=None,
+                                sep='\s+', header=None,
                                 engine='python')
         vertex_array = np.array(vertex_df.iloc[0:1, 0:3])
         vertex_array = np.append(vertex_array, vertex_df.iloc[0:1, 3:6],
@@ -379,7 +379,7 @@ def _read_vtk(file):
     start_faces = (vtk_df[vtk_df[0].str.contains(
                                             'POLYGONS')].index.tolist()[0]) + 1
     face_df = pd.read_csv(file, skiprows=range(start_faces),
-                          nrows=number_faces, delim_whitespace=True,
+                          nrows=number_faces, sep='\s+',
                           header=None, engine='python')
     face_array = np.array(face_df.iloc[:, 1:4])
     # read data into df and array if exists
@@ -388,7 +388,7 @@ def _read_vtk(file):
                                         'POINT_DATA')].index.tolist()[0]) + 3
         number_data = number_vertices
         data_df = pd.read_csv(file, skiprows=range(start_data),
-                              nrows=number_data, delim_whitespace=True,
+                              nrows=number_data, sep='\s+',
                               header=None, engine='python')
         data_array = np.array(data_df)
     else:
