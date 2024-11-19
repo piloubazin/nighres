@@ -8,7 +8,8 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_available_memory
 
 
-def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4.0, noise_level=0.1,
+def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4.0, noise_level=0.1, 
+                      iterations=10, diff=0.01,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Super Voxel Segmentation
@@ -31,6 +32,10 @@ def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4
         Scaling factor for the new super-voxel grid (default is 4)
     noise_level: float, optional
         Weighting parameter to balance image intensity and spatial variability
+    iterations: int, optional
+        Maximum number of iterations in the segmentation adjustment step (default is 10)
+    diff: float, optional
+        Maximum difference in probabilities between steps before stopping (default is 0.01)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -133,6 +138,8 @@ def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4
     # set algorithm parameters
     supervoxel.setScalingFactor(scaling)
     supervoxel.setNoiseLevel(noise_level)
+    supervoxel.setMaxIterations(iterations)
+    supervoxel.setMaxDifference(diff)
     
     # execute the algorithm
     try:
