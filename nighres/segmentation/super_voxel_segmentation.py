@@ -8,7 +8,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_available_memory
 
 
-def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4.0, noise_level=0.1, 
+def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None, scaling=4.0, noise_level=0.1, 
                       iterations=10, diff=0.01,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
@@ -125,11 +125,31 @@ def super_voxel_segmentation(image, prior_seg, prior_proba, mask=None, scaling=4
     supervoxel.setInputImage(nighresjava.JArray('float')(
                                     (data.flatten('F')).astype(float)))
     
-    supervoxel.setPriorSegmentationImage(nighresjava.JArray('int')(
+    if prior_seg is not None:
+        supervoxel.setPriorSegmentationImage(nighresjava.JArray('int')(
                 (load_volume(prior_seg).get_fdata().flatten('F')).astype(int).tolist()))
     
-    supervoxel.setMaxPriorImage(nighresjava.JArray('float')(
-                (load_volume(prior_proba).get_fdata().flatten('F')).astype(float)))
+    if type(prior_proba) is list:
+        nseg = len(prior_proba)
+        supervoxel.setPriorSegmentationNumber(nseg)
+        for idx in range(nseg):
+            supervoxel.setPriorImageAt(idx,nighresjava.JArray('float')(
+                (load_volume(prior_proba[idx]).get_fdata().flatten('F')).astype(float)))
+    elif prior_proba is not None:
+        prior = load_volume(prior_proba).get_fdata()
+        if len(prior.shape)==4:
+            nseg = prior.shape[3]
+            supervoxel.setPriorSegmentationNumber(nseg)
+            for idx in range(nseg):
+                supervoxel.setPriorImageAt(idx,nighresjava.JArray('float')(
+                    (prior[:,:,:,idx].flatten('F')).astype(float)))
+        else:
+            supervoxel.setMaxPriorImage(nighresjava.JArray('float')(
+                (prior.flatten('F')).astype(float)))
+    
+    if prior_seg is None and prior_proba is None:
+        print("some prior segmentation information is needed")
+        return
     
     if mask is not None:
         supervoxel.setMaskImage(nighresjava.JArray('int')(
