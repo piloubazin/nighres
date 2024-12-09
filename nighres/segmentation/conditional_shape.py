@@ -869,11 +869,11 @@ def conditional_shape_map_volumes(structures, contrasts,
     cspmax.setNumberOfSubjectsObjectsBgAndContrasts(1,structures,1,contrasts)
     cspmax.setOptions(True, False, False, False, True)
     cspmax.setNumberOfTargetContrasts(contrasts)
+    cspmax.initOrigTargetLabelings(16);
      
     # load target image for parameters
-    # load a first image for dim, res
     img = load_volume(new_atlas_probas)
-    new_data = img.get_fdata()
+    data = img.get_fdata()
     header = img.header
     affine = img.affine
     trg_resolution = [x.item() for x in header.get_zooms()]
@@ -882,8 +882,19 @@ def conditional_shape_map_volumes(structures, contrasts,
     cspmax.setTargetDimensions(trg_dimensions[0], trg_dimensions[1], trg_dimensions[2])
     cspmax.setTargetResolutions(trg_resolution[0], trg_resolution[1], trg_resolution[2])
 
+    # load the shape and intensity atlases
+    print("load: "+str(os.path.join(output_dir,new_atlas_probas)))
+    for n in range(data.shape[3]):
+        cspmax.setOrigProbasAt(n, data[:,:,:,n])
+ 
+    print("load: "+str(os.path.join(output_dir,new_atlas_labels)))
+    data = load_volume(new_atlas_labels).get_fdata()    
+    for n in range(data.shape[3]):
+        cspmax.setOrigLabelsAt(n, data[:,:,:,n])
+
+    # load original image for parameters
     img = load_volume(orig_atlas_probas)
-    orig_data = img.get_fdata()
+    data = img.get_fdata()
     header = img.header
     affine = img.affine
     resolution = [x.item() for x in header.get_zooms()]
@@ -893,30 +904,20 @@ def conditional_shape_map_volumes(structures, contrasts,
     cspmax.setAtlasResolutions(resolution[0], resolution[1], resolution[2])
     
     # load the shape and intensity atlases
+    print("load: "+str(os.path.join(output_dir,orig_atlas_probas)))
+    for n in range(data.shape[3]):
+        cspmax.setOrigProbasAt(n, data[:,:,:,n])
+        
+    print("load: "+str(os.path.join(output_dir,orig_atlas_labels)))
+    data = load_volume(atlas_labels).get_fdata()    
+    for n in range(data.shape[3]):
+        cspmax.setOrigLabelsAt(n, data[:,:,:,n])
+        
     print("load: "+str(os.path.join(output_dir,intensity_atlas_hist)))
     hist = load_volume(os.path.join(output_dir,intensity_atlas_hist)).get_fdata()
     cspmax.setConditionalHistogram(nighresjava.JArray('float')(
                                         (hist.flatten('F')).astype(float)))
 
-    cspmax.initOrigTargetLabelings(16);
-
-    print("load: "+str(os.path.join(output_dir,orig_atlas_probas)))
-    for n in range(orig_data.shape[3]):
-        cspmax.setOrigProbasAt(n, orig_data[:,:,:,n])
-        
-    print("load: "+str(os.path.join(output_dir,orig_atlas_labels)))
-    orig_data = load_volume(orig_atlas_labels).get_fdata()    
-    for n in range(orig_data.shape[3]):
-        cspmax.setOrigLabelsAt(n, orig_data[:,:,:,n])
-        
-    print("load: "+str(os.path.join(output_dir,new_atlas_probas)))
-    for n in range(new_data.shape[3]):
-        cspmax.setOrigProbasAt(n, new_data[:,:,:,n])
- 
-    print("load: "+str(os.path.join(output_dir,new_atlas_labels)))
-    orig_data = load_volume(new_atlas_labels).get_fdata()    
-    for n in range(new_data.shape[3]):
-        cspmax.setOrigLabelsAt(n, new_data[:,:,:,n])
         
 
     # execute the transfer
