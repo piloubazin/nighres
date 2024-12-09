@@ -885,12 +885,14 @@ def conditional_shape_map_volumes(structures, contrasts,
     # load the shape and intensity atlases
     print("load: "+str(os.path.join(output_dir,new_atlas_probas)))
     for n in range(data.shape[3]):
-        cspmax.setOrigProbasAt(n, data[:,:,:,n])
+        cspmax.setOrigProbasAt(n, nighresjava.JArray('float')(
+                                (data[:,:,:,n].flatten('F')).astype(float)))
  
     print("load: "+str(os.path.join(output_dir,new_atlas_labels)))
     data = load_volume(new_atlas_labels).get_fdata()    
     for n in range(data.shape[3]):
-        cspmax.setOrigLabelsAt(n, data[:,:,:,n])
+        cspmax.setOrigLabelsAt(n, nighresjava.JArray('int')(
+                                (data[:,:,:,n].flatten('F')).astype(int).tolist()))
 
     # load original image for parameters
     img = load_volume(orig_atlas_probas)
@@ -906,12 +908,14 @@ def conditional_shape_map_volumes(structures, contrasts,
     # load the shape and intensity atlases
     print("load: "+str(os.path.join(output_dir,orig_atlas_probas)))
     for n in range(data.shape[3]):
-        cspmax.setOrigProbasAt(n, data[:,:,:,n])
+        cspmax.setOrigProbasAt(n, nighresjava.JArray('float')(
+                                (data[:,:,:,n].flatten('F')).astype(float)))
         
     print("load: "+str(os.path.join(output_dir,orig_atlas_labels)))
     data = load_volume(atlas_labels).get_fdata()    
     for n in range(data.shape[3]):
-        cspmax.setOrigLabelsAt(n, data[:,:,:,n])
+        cspmax.setOrigLabelsAt(n, nighresjava.JArray('int')(
+                                (data[:,:,:,n].flatten('F')).astype(int).tolist()))
         
     print("load: "+str(os.path.join(output_dir,intensity_atlas_hist)))
     hist = load_volume(os.path.join(output_dir,intensity_atlas_hist)).get_fdata()
