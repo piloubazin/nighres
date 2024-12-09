@@ -1,6 +1,7 @@
 from nighres.segmentation.conditional_shape import conditional_shape
 from nighres.segmentation.conditional_shape import conditional_shape_atlasing
 from nighres.segmentation.conditional_shape import conditional_shape_map_intensities
+from nighres.segmentation.conditional_shape import conditional_shape_map_volumes
 from nighres.segmentation.fuzzy_cmeans import fuzzy_cmeans
 from nighres.segmentation.competing_probability_diffusion import competing_probability_diffusion
 from nighres.segmentation.super_voxel_segmentation import super_voxel_segmentation
