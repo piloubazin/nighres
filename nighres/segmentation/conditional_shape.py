@@ -912,7 +912,7 @@ def conditional_shape_map_volumes(structures, contrasts,
                                 (data[:,:,:,n].flatten('F')).astype(float)))
         
     print("load: "+str(os.path.join(output_dir,orig_atlas_labels)))
-    data = load_volume(atlas_labels).get_fdata()    
+    data = load_volume(orig_atlas_labels).get_fdata()    
     for n in range(data.shape[3]):
         cspmax.setOrigLabelsAt(n, nighresjava.JArray('int')(
                                 (data[:,:,:,n].flatten('F')).astype(int).tolist()))
