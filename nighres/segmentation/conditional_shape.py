@@ -787,7 +787,7 @@ def conditional_shape_map_intensities(structures, contrasts, targets,
 
 
 
-def conditional_shape_map_volumes(structures, 
+def conditional_shape_map_volumes(structures, contrasts,
                       orig_atlas_probas=None, orig_atlas_labels=None, 
                       new_atlas_probas=None, new_atlas_labels=None, 
                       intensity_atlas_hist=None,
@@ -801,6 +801,8 @@ def conditional_shape_map_volumes(structures,
     ----------
     structures: int
         Number of structures to parcellate
+    contrasts: int
+       Number of atlas image intensity contrasts
     orig_atlas_probas: niimg
         Pre-computed shape atlas from the shape levelsets (replacing them)
     orig_atlas_labels: niimg
@@ -838,11 +840,11 @@ def conditional_shape_map_volumes(structures,
 
     # make sure that saving related parameters are correct
     if save_data:
-        output_dir = _output_dir_4saving(output_dir, target_images[0])
+        output_dir = _output_dir_4saving(output_dir, new_atlas_probas)
 
         condhist_file = os.path.join(output_dir, 
                         _fname_4saving(module=__name__,file_name=file_name,
-                                   rootfile=target_images[0],
+                                   rootfile=new_atlas_probas,
                                    suffix='cspmax-chist'))
                 
         if overwrite is False \
@@ -864,9 +866,9 @@ def conditional_shape_map_volumes(structures,
     cspmax = nighresjava.ConditionalShapeSegmentationFaster()
 
     # set parameters
-    cspmax.setNumberOfSubjectsObjectsBgAndContrasts(1,structures,1,1)
+    cspmax.setNumberOfSubjectsObjectsBgAndContrasts(1,structures,1,contrasts)
     cspmax.setOptions(True, False, False, False, True)
-    cspmax.setNumberOfTargetContrasts(1)
+    cspmax.setNumberOfTargetContrasts(contrasts)
      
     # load target image for parameters
     # load a first image for dim, res
