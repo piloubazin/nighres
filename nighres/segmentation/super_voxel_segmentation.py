@@ -9,7 +9,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None, scaling=4.0, noise_level=0.1, 
-                      iterations=10, diff=0.01,
+                      iterations=10, diff=0.01, threshold=0.5,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Super Voxel Segmentation
@@ -36,6 +36,8 @@ def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None,
         Maximum number of iterations in the segmentation adjustment step (default is 10)
     diff: float, optional
         Maximum difference in probabilities between steps before stopping (default is 0.01)
+    threshold: float, optional
+        Maximum boundary probability threshold (default is 0.5)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -160,6 +162,7 @@ def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None,
     supervoxel.setNoiseLevel(noise_level)
     supervoxel.setMaxIterations(iterations)
     supervoxel.setMaxDifference(diff)
+    supervoxel.setThreshold(threshold)
     
     # execute the algorithm
     try:
