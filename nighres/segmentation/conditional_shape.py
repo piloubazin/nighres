@@ -938,7 +938,7 @@ def conditional_shape_map_volumes(structures, contrasts,
     # reshape output to what nibabel likes
     intens_hist_dims = ((structures+1)*(structures+1),cspmax.getNumberOfBins()+6,contrasts)
 
-    intens_hist_data = numpy.reshape(numpy.array(cspmax.getTargetConditionalHistogram(),
+    intens_hist_data = numpy.reshape(numpy.array(cspmax.getConditionalHistogram(),
                                        dtype=numpy.float32), newshape=intens_hist_dims, order='F')
 
 
