@@ -220,13 +220,21 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
     if isinstance(convergence,str):
         convergence = [convergence]
         
+    # build specific output names for the intermediate steps
+    if file_name is not None:
+        tmp1 = 'tmp1_'+file_name
+        tmp2 = 'tmp2_'+file_name
+    else:
+        tmp1 = 'tmp1_'+source_images[0]
+        tmp2 = 'tmp2_'+source_images[0]
+        
     print('\nStep 1: Global Registration')
     step1 = embedded_antspy_multi(source_images, target_images,
                     run_rigid[0], rigid_iterations[0], run_affine[0], affine_iterations[0],
                     run_syn[0], coarse_iterations[0], medium_iterations[0], fine_iterations[0],
 					scaling_factor[0], cost_function[0], interpolation[0], regularization[0], 
 					convergence[0], mask_zero, smooth_mask, ignore_affine, ignore_header,
-					save_data, overwrite, output_dir, file_name=None) 
+					save_data, overwrite, output_dir, file_name=tmp1) 
 	
     print('\nStep 2: Focused Registration')
     
@@ -316,7 +324,7 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
 					convergence=convergence[-1],
 					mask_zero=False, smooth_mask=0.0, 
 					ignore_affine=False, ignore_header=False,
-					save_data=save_data, overwrite=overwrite, output_dir=output_dir, file_name=None) 
+					save_data=save_data, overwrite=overwrite, output_dir=output_dir, file_name=tmp2) 
 
     print('\nCombine transformations')
     mapping = apply_coordinate_mappings(step1['mapping'], mapping1=step2['mapping'],
