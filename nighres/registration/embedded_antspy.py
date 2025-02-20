@@ -26,6 +26,8 @@ T=3
 def embedded_antspy(source_image, target_image,
                     run_rigid=False,
                     rigid_iterations=1000,
+                    run_similarity=False,
+                    similarity_iterations=1000,
                     run_affine=False,
                     affine_iterations=1000,
                     run_syn=True,
@@ -56,6 +58,10 @@ def embedded_antspy(source_image, target_image,
         Whether or not to run a rigid registration first (default is False)
     rigid_iterations: float
         Number of iterations in the rigid step (default is 1000)
+    run_similarity: bool
+        Whether or not to run a similarity (rigid+scale) registration first (default is False)
+    similarity_iterations: float
+        Number of iterations in the similarity step (default is 1000)
     run_affine: bool
         Whether or not to run a affine registration first (default is False)
     affine_iterations: float
@@ -129,7 +135,8 @@ def embedded_antspy(source_image, target_image,
 
     # just overloading the multi-channel version
     return embedded_antspy_multi([source_image], [target_image],
-                    run_rigid, rigid_iterations, run_affine, affine_iterations,
+                    run_rigid, rigid_iterations, run_similarity, similarity_iterations,
+                    run_affine, affine_iterations,
                     run_syn, coarse_iterations, medium_iterations, fine_iterations,
 					scaling_factor, cost_function, interpolation, regularization, 
 					convergence, mask_zero, smooth_mask, ignore_affine, ignore_header,
@@ -139,6 +146,8 @@ def embedded_antspy(source_image, target_image,
 def embedded_antspy_2d(source_image, target_image,
                     run_rigid=False,
                     rigid_iterations=1000,
+                    run_similarity=False,
+                    similarity_iterations=1000,
                     run_affine=False,
                     affine_iterations=1000,
                     run_syn=True,
@@ -169,6 +178,10 @@ def embedded_antspy_2d(source_image, target_image,
         Whether or not to run a rigid registration first (default is False)
     rigid_iterations: float
         Number of iterations in the rigid step (default is 1000)
+    run_similarity: bool
+        Whether or not to run a similarity (rigid+scale) registration first (default is False)
+    similarity_iterations: float
+        Number of iterations in the similarity step (default is 1000)
     run_affine: bool
         Whether or not to run a affine registration first (default is False)
     affine_iterations: float
@@ -232,6 +245,7 @@ def embedded_antspy_2d(source_image, target_image,
     return embedded_antspy_2d_multi([source_image], [target_image], 
                     None,
                     run_rigid, rigid_iterations,
+                    run_similarity, similarity_iterations,
                     run_affine, affine_iterations,
                     run_syn, coarse_iterations, medium_iterations, 
                     fine_iterations, scaling_factor,
@@ -244,6 +258,8 @@ def embedded_antspy_2d(source_image, target_image,
 def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
                     run_rigid=False,
                     rigid_iterations=1000,
+                    run_similarity=False,
+                    similarity_iterations=1000,
                     run_affine=False,
                     affine_iterations=1000,
                     run_syn=True,
@@ -277,6 +293,10 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         Whether or not to run a rigid registration first (default is False)
     rigid_iterations: float
         Number of iterations in the rigid step (default is 1000)
+    run_similarity: bool
+        Whether or not to run a similarity (rigid+scale) registration first (default is False)
+    similarity_iterations: float
+        Number of iterations in the similarity step (default is 1000)
     run_affine: bool
         Whether or not to run a affine registration first (default is False)
     affine_iterations: float
@@ -659,6 +679,35 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('--winsorize-image-intensities')
         args.append('[ 0.001, 0.999 ]')
 
+    if run_similarity is True:
+        args.append('--transform')
+        args.append('Similarity[0.1]')
+        if (cost_function=='CrossCorrelation'):
+            for idx,img in enumerate(srcfiles):
+                args.append('--metric')
+                args.append('CC['+trgfiles[idx]+','+srcfiles[idx] \
+                            +','+'{:.3f}'.format(weights[idx])+',5,Random,0.3]')
+        else:
+            for idx,img in enumerate(srcfiles):
+                args.append('--metric')
+                args.append('MI['+trgfiles[idx]+','+srcfiles[idx] \
+                            +','+'{:.3f}'.format(weights[idx])+',32,Random,0.3]')
+
+        args.append('--convergence') 
+        args.append('['+iter_similarity+','+str(convergence)+',10]')
+
+        args.append('--smoothing-sigmas')
+        args.append(smooth)
+        
+        args.append('--shrink-factors')
+        args.append(shrink)
+        
+        args.append('--use-histogram-matching')
+        args.append('0')
+        
+        args.append('--winsorize-image-intensities')
+        args.append('[ 0.001, 0.999 ]')
+
     if run_affine is True:
         args.append('--transform')
         args.append('Affine[0.1]')
@@ -722,7 +771,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('--winsorize-image-intensities')
         args.append('[0.001,0.999]')
 
-    if run_rigid is False and run_affine is False and run_syn is False:
+    if run_rigid is False and run_similarity is False and run_affine is False and run_syn is False:
         args.append('--transform')
         args.append('Rigid[0.1]')
         for idx,img in enumerate(srcfiles):
