@@ -982,6 +982,8 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
 def embedded_antspy_multi(source_images, target_images,
                     run_rigid=True,
                     rigid_iterations=1000,
+                    run_similarity=False,
+                    similarity_iterations=1000,
                     run_affine=False,
                     affine_iterations=1000,
                     run_syn=True,
@@ -1013,6 +1015,10 @@ def embedded_antspy_multi(source_images, target_images,
         Whether or not to run a rigid registration first (default is False)
     rigid_iterations: float
         Number of iterations in the rigid step (default is 1000)
+    run_similarity: bool
+        Whether or not to run a similarity (rigid+scale) registration first (default is False)
+    similarity_iterations: float
+        Number of iterations in the similarity step (default is 1000)
     run_affine: bool
         Whether or not to run a affine registration first (default is False)
     affine_iterations: float
@@ -1401,6 +1407,35 @@ def embedded_antspy_multi(source_images, target_images,
 
         args.append('--convergence') 
         args.append('['+iter_rigid+','+str(convergence)+',10]')
+
+        args.append('--smoothing-sigmas')
+        args.append(smooth)
+        
+        args.append('--shrink-factors')
+        args.append(shrink)
+        
+        args.append('--use-histogram-matching')
+        args.append('0')
+        
+        args.append('--winsorize-image-intensities')
+        args.append('[ 0.001, 0.999 ]')
+
+    if run_similarity is True:
+        args.append('--transform')
+        args.append('Similarity[0.1]')
+        if (cost_function=='CrossCorrelation'):
+            for idx,img in enumerate(srcfiles):
+                args.append('--metric')
+                args.append('CC['+trgfiles[idx]+','+srcfiles[idx] \
+                            +','+'{:.3f}'.format(weight)+',5,Random,0.3]')
+        else:
+            for idx,img in enumerate(srcfiles):
+                args.append('--metric')
+                args.append('MI['+trgfiles[idx]+','+srcfiles[idx] \
+                            +','+'{:.3f}'.format(weight)+',32,Random,0.3]')
+
+        args.append('--convergence') 
+        args.append('['+iter_similarity+','+str(convergence)+',10]')
 
         args.append('--smoothing-sigmas')
         args.append(smooth)
