@@ -27,6 +27,8 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
                     label_list=None, label_distance=3.0,
                     run_rigid=[True,False],
                     rigid_iterations=[1000,0],
+                    run_similarity=[False,False],
+                    similarity_iterations=[0,0],
                     run_affine=[False,False],
                     affine_iterations=[0,0],
                     run_syn=[True,True],
@@ -68,6 +70,10 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
         Whether or not to run a rigid registration first (default is True)
     rigid_iterations: float or [float]
         Number of iterations in the rigid step (default is 1000)
+    run_similarity: bool
+        Whether or not to run a similarity (rigid+scale) registration first (default is False)
+    similarity_iterations: float
+        Number of iterations in the similarity step (default is 1000)
     run_affine: bool or [bool]
         Whether or not to run a affine registration first (default is False)
     affine_iterations: float or [float]
@@ -230,11 +236,20 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
         
     print('\nStep 1: Global Registration')
     step1 = embedded_antspy_multi(source_images, target_images,
-                    run_rigid[0], rigid_iterations[0], run_affine[0], affine_iterations[0],
-                    run_syn[0], coarse_iterations[0], medium_iterations[0], fine_iterations[0],
-					scaling_factor[0], cost_function[0], interpolation[0], regularization[0], 
-					convergence[0], mask_zero, smooth_mask, ignore_affine, ignore_header,
-					save_data, overwrite, output_dir, file_name=tmp1) 
+                    run_rigid=run_rigid[0], rigid_iterations=rigid_iterations[0], 
+                    run_similarity=run_similarity[0], similarity_iterations=similarity_iterations[0], 
+                    run_affine=run_affine[0], affine_iterations=affine_iterations[0],
+                    coarse_iterations=coarse_iterations[0],
+                    medium_iterations=medium_iterations[0], 
+                    fine_iterations=fine_iterations[0],
+					scaling_factor=scaling_factor[0],
+					cost_function=cost_function[0],
+					interpolation=interpolation[0],
+					regularization=regularization[0],
+					convergence=convergence[0],
+					mask_zero=mask_zero, smooth_mask=smooth_mask, 
+					ignore_affine=ignore_affine, ignore_header=ignore_header,
+					save_data=save_data, overwrite=overwrite, output_dir=output_dir, file_name=tmp1) 
 	
     print('\nStep 2: Focused Registration')
     

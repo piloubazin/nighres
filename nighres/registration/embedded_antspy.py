@@ -1512,7 +1512,7 @@ def embedded_antspy_multi(source_images, target_images,
         args.append('--winsorize-image-intensities')
         args.append('[0.001,0.999]')
 
-    if run_rigid is False and run_affine is False and run_syn is False:
+    if run_rigid is False and run_similarity is False and run_affine is False and run_syn is False:
         args.append('--transform')
         args.append('Rigid[0.1]')
         for idx,img in enumerate(srcfiles):
