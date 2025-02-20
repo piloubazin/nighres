@@ -636,12 +636,14 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     # figure out the number of scales, going with a factor of two
     n_scales = math.ceil(math.log(scaling_factor)/math.log(2.0))
     iter_rigid = str(rigid_iterations)
+    iter_similarity = str(similarity_iterations)
     iter_affine = str(affine_iterations)
     iter_syn = str(coarse_iterations)
     smooth = str(float(scaling_factor))
     shrink = str(scaling_factor)
     for n in range(n_scales):
         iter_rigid = iter_rigid+'x'+str(rigid_iterations)
+        iter_similarity = iter_similarity+'x'+str(similarity_iterations)
         iter_affine = iter_affine+'x'+str(affine_iterations)
         if n<(n_scales-1)/2: iter_syn = iter_syn+'x'+str(coarse_iterations)
         elif n<n_scales-1: iter_syn = iter_syn+'x'+str(medium_iterations)
@@ -1426,12 +1428,14 @@ def embedded_antspy_multi(source_images, target_images,
     # figure out the number of scales, going with a factor of two
     n_scales = math.ceil(math.log(scaling_factor)/math.log(2.0))
     iter_rigid = str(rigid_iterations)
+    iter_similarity = str(similarity_iterations)
     iter_affine = str(affine_iterations)
     iter_syn = str(coarse_iterations)
     smooth = str(float(scaling_factor))
     shrink = str(scaling_factor)
     for n in range(n_scales):
         iter_rigid = iter_rigid+'x'+str(rigid_iterations)
+        iter_similarity = iter_similarity+'x'+str(similarity_iterations)
         iter_affine = iter_affine+'x'+str(affine_iterations)
         if n<(n_scales-1)/2: iter_syn = iter_syn+'x'+str(coarse_iterations)
         elif n<n_scales-1: iter_syn = iter_syn+'x'+str(medium_iterations)
