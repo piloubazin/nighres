@@ -228,11 +228,11 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
         
     # build specific output names for the intermediate steps
     if file_name is not None:
-        tmp1 = 'tmp1_'+file_name
-        tmp2 = 'tmp2_'+file_name
+        tmp1 = 'tmp1_'+os.path.basename(file_name)
+        tmp2 = 'tmp2_'+os.path.basename(file_name)
     else:
-        tmp1 = 'tmp1_'+source_images[0]
-        tmp2 = 'tmp2_'+source_images[0]
+        tmp1 = 'tmp1_'+os.path.basename(source_images[0])
+        tmp2 = 'tmp2_'+os.path.basename(source_images[0])
         
     print('\nStep 1: Global Registration')
     step1 = embedded_antspy_multi(source_images, target_images,
