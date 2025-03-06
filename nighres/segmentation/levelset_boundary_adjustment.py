@@ -58,16 +58,16 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, sprea
 
     # make sure that saving related parameters are correct
     if save_data:
-        output_dir = _output_dir_4saving(output_dir, image)
+        output_dir = _output_dir_4saving(output_dir, levelset)
 
         result_file = os.path.join(output_dir, 
                         _fname_4saving(module=__name__,file_name=file_name,
-                                   rootfile=image,
+                                   rootfile=levelset,
                                    suffix='lba-lvl'))
 
         proba_file = os.path.join(output_dir, 
                         _fname_4saving(module=__name__,file_name=file_name,
-                                   rootfile=image,
+                                   rootfile=levelset,
                                    suffix='lba-proba'))
 
         if overwrite is False \
