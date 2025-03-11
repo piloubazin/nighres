@@ -8,8 +8,8 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_available_memory
 
 
-def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, spread=3.0,
-                      contrast="increasing", iterations=1,
+def levelset_boundary_adjustment(levelset, image, mask=None, distance=3.0, spread=1.0,
+                      contrast="increasing", iterations=10, repeats=2, smoothness=0.5,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Levelset Boundary Adjustment
@@ -25,13 +25,17 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, sprea
     mask: niimg, optional
         Data mask to specify acceptable seeding regions
     distance: float, optional
-        Distance to the boundary to include in the modeling (default is 5.0)
+        Distance to the boundary to include in the modeling (default is 3.0)
     spread: float, optional
-        Distance to use along the boundary to define the local sigmoid fit (default is 3.0)
+        Distance to use along the boundary to define the local sigmoid fit (default is 1.0)
     contrast: string, optional
         Type of contrast to use: increasing, decreasing, ridge, etc (default is increasing)
     iterations: int, optional
-        Number of iterations for the adjustment (default is 1)
+        Number of iterations for the adjustment (default is 10)
+    repeats: int, optional
+        Number of repeats of the full adjustment and levelset deformation procedure (default is 2)
+    smoothness: float, optional
+        Amount of curvature smoothing to use when deforming the levelset, in [0,1] (default is 0.5)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -116,6 +120,8 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, sprea
     algo.setLocalSpread(spread)
     algo.setContrastType(contrast)
     algo.setIterations(iterations)
+    algo.setRepeats(repeats)
+    algo.setSmoothness(smoothness)
     
     # execute the algorithm
     try:
