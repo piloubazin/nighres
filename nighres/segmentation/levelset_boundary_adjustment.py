@@ -9,7 +9,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, spread=3.0,
-                      contrast="increasing",
+                      contrast="increasing", iterations=1,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Levelset Boundary Adjustment
@@ -30,6 +30,8 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, sprea
         Distance to use along the boundary to define the local sigmoid fit (default is 3.0)
     contrast: string, optional
         Type of contrast to use: increasing, decreasing, ridge, etc (default is increasing)
+    iterations: int, optional
+        Number of iterations for the adjustment (default is 1)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -113,6 +115,7 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=5.0, sprea
     algo.setBoundaryDistance(distance)
     algo.setLocalSpread(spread)
     algo.setContrastType(contrast)
+    algo.setIterations(iterations)
     
     # execute the algorithm
     try:
