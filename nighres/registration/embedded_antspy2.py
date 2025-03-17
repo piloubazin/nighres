@@ -1850,10 +1850,8 @@ def embedded_antspy2_multi(source_images, target_images,
     if os.path.exists(trg_mapY_trans): os.remove(trg_mapY_trans)
     if os.path.exists(trg_mapZ_trans): os.remove(trg_mapZ_trans)
     if ignore_affine or ignore_header:
-        for src_img_file in src_img_files:
-            if os.path.exists(src_img_file): os.remove(src_img_file)
-        for trg_img_file in trg_img_files:
-            if os.path.exists(trg_img_file): os.remove(trg_img_file)
+        if os.path.exists(src_img_file): os.remove(src_img_file)
+        if os.path.exists(trg_img_file): os.remove(trg_img_file)
 
     for name in forward:
         if os.path.exists(name): os.remove(name)
