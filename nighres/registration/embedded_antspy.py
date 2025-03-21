@@ -928,7 +928,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
             trg_at.append('['+transform+',0]')
     trg_mapX_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_image,
-                                                        suffix='tmp_srccoordX_map'))
+                                                        suffix='tmp_trgcoordX_map'))
     trg_at.append('--output')
     trg_at.append(trg_mapX_trans)
 
@@ -953,7 +953,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
             trg_at.append('['+transform+',0]')
     trg_mapY_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_image,
-                                                        suffix='tmp_srccoordY_map'))
+                                                        suffix='tmp_trgcoordY_map'))
     trg_at.append('--output')
     trg_at.append(trg_mapY_trans)
 
@@ -1302,30 +1302,54 @@ def embedded_antspy_multi(source_images, target_images,
         targets.append(target)
 
     # build coordinate mapping matrices and save them to disk
-    src_coord = numpy.zeros((nsx,nsy,nsz,3))
-    trg_coord = numpy.zeros((ntx,nty,ntz,3))
+    src_coordX = numpy.zeros((nsx,nsy,nsz))
+    src_coordY = numpy.zeros((nsx,nsy,nsz))
+    src_coordZ = numpy.zeros((nsx,nsy,nsz))
+    trg_coordX = numpy.zeros((ntx,nty,ntz))
+    trg_coordY = numpy.zeros((ntx,nty,ntz))
+    trg_coordZ = numpy.zeros((ntx,nty,ntz))
     for x in range(nsx):
         for y in range(nsy):
             for z in range(nsz):
-                src_coord[x,y,z,X] = x
-                src_coord[x,y,z,Y] = y
-                src_coord[x,y,z,Z] = z
-    src_map = nibabel.Nifti1Image(src_coord, source.affine, source.header)
-    src_map_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                src_coordX[x,y,z] = x
+                src_coordY[x,y,z] = y
+                src_coordZ[x,y,z] = z
+    src_mapX = nibabel.Nifti1Image(src_coordX, source.affine, source.header)
+    src_mapX_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_images[0],
-                                                        suffix='tmp_srccoord'))
-    save_volume(src_map_file, src_map)
+                                                        suffix='tmp_srccoordX'))
+    save_volume(src_mapX_file, src_mapX)
+    src_mapY = nibabel.Nifti1Image(src_coordY, source.affine, source.header)
+    src_mapY_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_srccoordY'))
+    save_volume(src_mapY_file, src_mapY)
+    src_mapZ = nibabel.Nifti1Image(src_coordZ, source.affine, source.header)
+    src_mapZ_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_srccoordZ'))
+    save_volume(src_mapZ_file, src_mapZ)
     for x in range(ntx):
         for y in range(nty):
             for z in range(ntz):
-                trg_coord[x,y,z,X] = x
-                trg_coord[x,y,z,Y] = y
-                trg_coord[x,y,z,Z] = z
-    trg_map = nibabel.Nifti1Image(trg_coord, target.affine, target.header)
-    trg_map_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                trg_coordX[x,y,z] = x
+                trg_coordY[x,y,z] = y
+                trg_coordZ[x,y,z] = z
+    trg_mapX = nibabel.Nifti1Image(trg_coordX, target.affine, target.header)
+    trg_mapX_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_images[0],
-                                                        suffix='tmp_trgcoord'))
-    save_volume(trg_map_file, trg_map)
+                                                        suffix='tmp_trgcoordX'))
+    save_volume(trg_mapX_file, trg_mapX)
+    trg_mapY = nibabel.Nifti1Image(trg_coordY, target.affine, target.header)
+    trg_mapY_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_trgcoordY'))
+    save_volume(trg_mapY_file, trg_mapY)
+    trg_mapZ = nibabel.Nifti1Image(trg_coordZ, target.affine, target.header)
+    trg_mapZ_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_trgcoordZ'))
+    save_volume(trg_mapZ_file, trg_mapZ)
 
     if mask_zero:
         # create and save temporary masks
@@ -1644,9 +1668,9 @@ def embedded_antspy_multi(source_images, target_images,
         libfn(processed_at)
 
     # Create coordinate mappings
-    src_at = ['--dimensionality','3','--input-image-type','3']
+    src_at = ['--dimensionality','3','--input-image-type','0']
     src_at.append('--input')
-    src_at.append(src_map.get_filename())
+    src_at.append(src_mapX.get_filename())
     src_at.append('--reference-image')
     src_at.append(target.get_filename())
     src_at.append('--interpolation')
@@ -1658,17 +1682,78 @@ def embedded_antspy_multi(source_images, target_images,
         else:
             src_at.append('--transform')
             src_at.append('['+transform+',0]')
+    src_mapX_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_image,
+                                                        suffix='tmp_srccoordX_map'))
     src_at.append('--output')
-    src_at.append(mapping_file)
+    src_at.append(src_mapX_trans)
 
     processed_src_at = ants.utils._int_antsProcessArguments(src_at)
     print(processed_src_at)
     libfn = ants.utils.get_lib_fn("antsApplyTransforms")
     libfn(processed_src_at)
 
-    trg_at = ['--dimensionality','3','--input-image-type','3']
+    src_at = ['--dimensionality','3','--input-image-type','0']
+    src_at.append('--input')
+    src_at.append(src_mapY.get_filename())
+    src_at.append('--reference-image')
+    src_at.append(target.get_filename())
+    src_at.append('--interpolation')
+    src_at.append('Linear')
+    for idx,transform in enumerate(forward):
+        if flag[idx]:
+            src_at.append('--transform')
+            src_at.append('['+transform+',1]')
+        else:
+            src_at.append('--transform')
+            src_at.append('['+transform+',0]')
+    src_mapY_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_image,
+                                                        suffix='tmp_srccoordY_map'))
+    src_at.append('--output')
+    src_at.append(src_mapY_trans)
+
+    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    print(processed_src_at)
+    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn(processed_src_at)
+
+    src_at = ['--dimensionality','3','--input-image-type','0']
+    src_at.append('--input')
+    src_at.append(src_mapZ.get_filename())
+    src_at.append('--reference-image')
+    src_at.append(target.get_filename())
+    src_at.append('--interpolation')
+    src_at.append('Linear')
+    for idx,transform in enumerate(forward):
+        if flag[idx]:
+            src_at.append('--transform')
+            src_at.append('['+transform+',1]')
+        else:
+            src_at.append('--transform')
+            src_at.append('['+transform+',0]')
+    src_mapZ_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_image,
+                                                        suffix='tmp_srccoordZ_map'))
+    src_at.append('--output')
+    src_at.append(src_mapZ_trans)
+
+    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    print(processed_src_at)
+    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn(processed_src_at)
+
+    # combine X,Y,Z mappings
+    mapX = load_volume(src_mapX_trans).get_fdata()
+    mapY = load_volume(src_mapY_trans).get_fdata()
+    mapZ = load_volume(src_mapZ_trans).get_fdata()
+    src_map = numpy.stack((mapX,mapY,mapZ),axis=-1)
+    mapping = nibabel.Nifti1Image(src_map, target.affine, target.header)
+    save_volume(mapping_file, mapping)
+
+    trg_at = ['--dimensionality','3','--input-image-type','0']
     trg_at.append('--input')
-    trg_at.append(trg_map.get_filename())
+    trg_at.append(trg_mapX.get_filename())
     trg_at.append('--reference-image')
     trg_at.append(source.get_filename())
     trg_at.append('--interpolation')
@@ -1680,19 +1765,90 @@ def embedded_antspy_multi(source_images, target_images,
         else:
             trg_at.append('--transform')
             trg_at.append('['+transform+',0]')
+    trg_mapX_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_image,
+                                                        suffix='tmp_trgcoordX_map'))
     trg_at.append('--output')
-    trg_at.append(inverse_mapping_file)
+    trg_at.append(trg_mapX_trans)
 
     processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
     print(processed_trg_at)
     libfn = ants.utils.get_lib_fn("antsApplyTransforms")
     libfn(processed_trg_at)
 
+    trg_at = ['--dimensionality','3','--input-image-type','0']
+    trg_at.append('--input')
+    trg_at.append(trg_mapY.get_filename())
+    trg_at.append('--reference-image')
+    trg_at.append(source.get_filename())
+    trg_at.append('--interpolation')
+    trg_at.append('Linear')
+    for idx,transform in enumerate(inverse):
+        if linear[idx]:
+            trg_at.append('--transform')
+            trg_at.append('['+transform+',1]')
+        else:
+            trg_at.append('--transform')
+            trg_at.append('['+transform+',0]')
+    trg_mapY_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_image,
+                                                        suffix='tmp_trgcoordY_map'))
+    trg_at.append('--output')
+    trg_at.append(trg_mapY_trans)
+
+    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    print(processed_trg_at)
+    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn(processed_trg_at)
+
+    trg_at = ['--dimensionality','3','--input-image-type','0']
+    trg_at.append('--input')
+    trg_at.append(trg_mapZ.get_filename())
+    trg_at.append('--reference-image')
+    trg_at.append(source.get_filename())
+    trg_at.append('--interpolation')
+    trg_at.append('Linear')
+    for idx,transform in enumerate(inverse):
+        if linear[idx]:
+            trg_at.append('--transform')
+            trg_at.append('['+transform+',1]')
+        else:
+            trg_at.append('--transform')
+            trg_at.append('['+transform+',0]')
+    trg_mapZ_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_image,
+                                                        suffix='tmp_trgcoordZ_map'))
+    trg_at.append('--output')
+    trg_at.append(trg_mapZ_trans)
+
+    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    print(processed_trg_at)
+    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn(processed_trg_at)
+
+    # combine X,Y,Z mappings
+    mapX = load_volume(trg_mapX_trans).get_fdata()
+    mapY = load_volume(trg_mapY_trans).get_fdata()
+    mapZ = load_volume(trg_mapZ_trans).get_fdata()
+    trg_map = numpy.stack((mapX,mapY,mapZ),axis=-1)
+    inverse_mapping = nibabel.Nifti1Image(trg_map, source.affine, source.header)
+    save_volume(inverse_mapping_file, inverse_mapping)
+
     # pad coordinate mapping outside the image? hopefully not needed...
 
     # clean-up intermediate files
-    if os.path.exists(src_map_file): os.remove(src_map_file)
-    if os.path.exists(trg_map_file): os.remove(trg_map_file)
+    if os.path.exists(src_mapX_file): os.remove(src_mapX_file)
+    if os.path.exists(src_mapY_file): os.remove(src_mapY_file)
+    if os.path.exists(src_mapY_file): os.remove(src_mapZ_file)
+    if os.path.exists(trg_mapX_file): os.remove(trg_mapX_file)
+    if os.path.exists(trg_mapY_file): os.remove(trg_mapY_file)
+    if os.path.exists(trg_mapY_file): os.remove(trg_mapZ_file)
+    if os.path.exists(src_mapX_trans): os.remove(src_mapX_trans)
+    if os.path.exists(src_mapY_trans): os.remove(src_mapY_trans)
+    if os.path.exists(src_mapY_trans): os.remove(src_mapZ_trans)
+    if os.path.exists(trg_mapX_trans): os.remove(trg_mapX_trans)
+    if os.path.exists(trg_mapY_trans): os.remove(trg_mapY_trans)
+    if os.path.exists(trg_mapY_trans): os.remove(trg_mapZ_trans)
     if ignore_affine or ignore_header:
         if os.path.exists(src_img_file): os.remove(src_img_file)
         if os.path.exists(trg_img_file): os.remove(trg_img_file)
