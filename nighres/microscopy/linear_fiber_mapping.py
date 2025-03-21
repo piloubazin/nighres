@@ -145,14 +145,25 @@ def linear_fiber_mapping(input_image, ridge_intensities,
             and os.path.isfile(lines_file) \
             and os.path.isfile(length_file) \
             and os.path.isfile(theta_file) \
-            and os.path.isfile(ani_file) :
+            and os.path.isfile(ani_file) \
+            and (not diameter 
+                or (os.path.isfile(dia_file) and os.path.isfile(pv_file) ) ):
 
             print("skip computation (use existing results)")
-            output = {'proba': proba_file,
-                      'lines': lines_file,
-                      'length': length_file,
-                      'theta': theta_file,
-                      'ani': ani_file}
+            if diameter:
+                output = {'proba': proba_file,
+                          'lines': lines_file,
+                          'length': length_file,
+                          'theta': theta_file,
+                          'ani': ani_file,
+                          'dia': dia_file,
+                          'pv': pv_file}
+            else:
+                output = {'proba': proba_file,
+                          'lines': lines_file,
+                          'length': length_file,
+                          'theta': theta_file,
+                          'ani': ani_file}
             return output
 
 
