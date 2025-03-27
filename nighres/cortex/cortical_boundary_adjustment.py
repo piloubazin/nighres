@@ -9,8 +9,8 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, spread=1.0,
-                      contrast="increasing", iterations=10, repeats=2, smoothness=0.5,
-                      thickness=2.0,
+                      contrast="increasing", iterations=4, repeats=10, pairs=2,
+                      smoothness=0.5, thickness=2.0,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Cortical Boundary Adjustment
@@ -34,9 +34,11 @@ def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, sprea
     contrast: string, optional
         Type of contrast to use: increasing, decreasing, ridge, etc (default is increasing)
     iterations: int, optional
-        Number of iterations for the adjustment (default is 10)
+        Number of iterations for the adjustment (default is 4)
     repeats: int, optional
-        Number of repeats of the full adjustment and levelset deformation procedure (default is 2)
+        Number of repeats of the adjustment and levelset deformation procedure for each surface (default is 10)
+    pairs: int, optional
+        Number of pairs of GM/WM and CSF/GM surface adjustments performed iteratively (default is 2)
     smoothness: float, optional
         Amount of curvature smoothing to use when deforming the levelset, in [0,1] (default is 0.5)
     thickness: float, optional
@@ -136,6 +138,7 @@ def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, sprea
     algo.setContrastType(contrast)
     algo.setIterations(iterations)
     algo.setRepeats(repeats)
+    algo.setPairs(pairs)
     algo.setSmoothness(smoothness)
     algo.setMinThickness(thickness)
     
