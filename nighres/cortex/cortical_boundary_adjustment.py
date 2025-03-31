@@ -8,8 +8,9 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_available_memory
 
 
-def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, spread=1.0,
-                      contrast="increasing", iterations=4, repeats=10, pairs=2,
+def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
+                      mask=None, distance=3.0, spread=1.0,
+                      iterations=4, repeats=10, pairs=2,
                       smoothness=0.5, thickness=2.0,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
@@ -23,16 +24,18 @@ def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, sprea
         Input levelset representation of the inner GM/WM boundary
     cgb: niimg
         Input levelset representation of the pial CSF/GM boundary
-    image: niimg
-        Input image defining the contrast to use
+    images: [niimg]
+        Input images defining the contrasts to use
+    gwb_contrasts: [string]
+        Type of contrast to use in each image for the GM/WM boundary: increasing, decreasing, both.
+    cgb_contrasts: [string]
+        Type of contrast to use in each iamge for the CSF/GM boundary: increasing, decreasing, both.
     mask: niimg, optional
         Data mask to specify acceptable seeding regions
     distance: float, optional
         Distance to the boundary to include in the modeling (default is 3.0)
     spread: float, optional
         Distance to use along the boundary to define the local sigmoid fit (default is 1.0)
-    contrast: string, optional
-        Type of contrast to use: increasing, decreasing, ridge, etc (default is increasing)
     iterations: int, optional
         Number of iterations for the adjustment (default is 4)
     repeats: int, optional
@@ -109,7 +112,7 @@ def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, sprea
     # set parameters
     
     # load image and use it to set dimensions and resolution
-    img = load_volume(image)
+    img = load_volume(images[0])
     data = img.get_fdata()
     affine = img.affine
     header = img.header
@@ -118,9 +121,11 @@ def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, sprea
 
     algo.setDimensions(dimensions[0], dimensions[1], dimensions[2])
     algo.setResolutions(resolution[0], resolution[1], resolution[2])
-        
-    algo.setContrastImage(nighresjava.JArray('float')(
-                                    (data.flatten('F')).astype(float)))
+    
+    algo.setContrastNumber(len(images))
+    for idx,image in enumerate(images):
+        algo.setContrastImageAt(idx, nighresjava.JArray('float')(
+                                    (load_volume(image).get_fdata().flatten('F')).astype(float)))
     
     algo.setGwbLevelsetImage(nighresjava.JArray('float')(
                 (load_volume(gwb).get_fdata().flatten('F')).astype(float)))
@@ -135,7 +140,10 @@ def cortical_boundary_adjustment(gwb, cgb, image, mask=None, distance=3.0, sprea
     # set algorithm parameters
     algo.setBoundaryDistance(distance)
     algo.setLocalSpread(spread)
-    algo.setContrastType(contrast)
+    for idx,contrast in enumerate(gwb_contrasts):
+        algo.setGwbContrastTypeAt(idx,contrast)
+    for idx,contrast in enumerate(cgb_contrasts):
+        algo.setCgbContrastTypeAt(idx,contrast)
     algo.setIterations(iterations)
     algo.setRepeats(repeats)
     algo.setPairs(pairs)
