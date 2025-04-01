@@ -14,6 +14,7 @@ def linear_fiber_mapping(input_image, ridge_intensities,
                               diffusion_factor=1.0,
                               similarity_scale=0.1,
                               max_iter=100, max_diff=1e-3,
+                              skip_detection=False,
                               threshold=0.5,
                               max_dist=1.0,
                               inclusion_ratio=0.1,
@@ -47,6 +48,9 @@ def linear_fiber_mapping(input_image, ridge_intensities,
         Maximum number of diffusion iterations
     max_diff: int
         Maximum difference to stop the diffusion
+    skip_detection: bool
+        Whether to perform the ridge detection step or assume the input is a vessel probability
+        (default is False)
     threshold: float
         Detection threshold for the structures to keep (default is 0.5)
     max_dist: float
@@ -197,6 +201,7 @@ def linear_fiber_mapping(input_image, ridge_intensities,
     lfm.setSimilarityScale(similarity_scale)
     lfm.setMaxIterations(max_iter)
     lfm.setMaxDifference(max_diff)
+    lfm.setSkipDetection(skip_detection)
     lfm.setDetectionThreshold(threshold)
     lfm.setMaxLineDistance(max_dist)
     lfm.setInclusionRatio(inclusion_ratio)
