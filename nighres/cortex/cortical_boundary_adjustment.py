@@ -11,7 +11,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
                       mask=None, distance=3.0, spread=1.0,
                       iterations=4, repeats=10, pairs=2,
-                      smoothness=0.5, thickness=2.0,
+                      smoothness=0.5, thickness=2.0, noise=0.1,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Cortical Boundary Adjustment
@@ -46,6 +46,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
         Amount of curvature smoothing to use when deforming the levelset, in [0,1] (default is 0.5)
     thickness: float, optional
         Minimum expected thickness of the cortex, in voxels (default is 2.0)
+    noise: float, optional
+        Noise ratio for supervoxel parcellation (default is 0.1)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -152,7 +154,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     
     # execute the algorithm
     try:
-        algo.execute()
+        algo.executeSuper()
 
     except:
         # if the Java module fails, reraise the error it throws
