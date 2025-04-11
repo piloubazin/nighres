@@ -17,7 +17,7 @@ def linear_fiber_mapping(input_image, ridge_intensities,
                               skip_detection=False,
                               threshold=0.5,
                               max_dist=1.0,
-                              inclusion_ratio=0.1,
+                              inclusion=0.25,
                               extend=False,
                               extend_ratio=0.5,
                               diameter=False,
@@ -55,8 +55,8 @@ def linear_fiber_mapping(input_image, ridge_intensities,
         Detection threshold for the structures to keep (default is 0.5)
     max_dist: float
         Maximum distance of voxels to include in lines (default is 1.0)
-    inclusion_ratio: float
-        Ratio of the highest detection value to include in lines (default is 0.1)
+    inclusion: float
+        Inclusion threshold for growing lines (default is 0.25)
     extend: bool
         Whether or not to extend the estimation results into the background 
         and/or lower values (default is False)
@@ -204,7 +204,7 @@ def linear_fiber_mapping(input_image, ridge_intensities,
     lfm.setSkipDetection(skip_detection)
     lfm.setDetectionThreshold(threshold)
     lfm.setMaxLineDistance(max_dist)
-    lfm.setInclusionRatio(inclusion_ratio)
+    lfm.setInclusionThreshold(inclusion)
     lfm.setExtendResult(extend)
     lfm.setExtendRatio(extend_ratio)
     lfm.setEstimateDiameter(diameter)
