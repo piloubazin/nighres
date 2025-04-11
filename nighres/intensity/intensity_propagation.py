@@ -22,7 +22,7 @@ def intensity_propagation(image, mask=None, combine='mean', distance_mm=5.0,
         Input image
     mask: niimg, optional
         Data mask to specify acceptable seeding regions
-    combine: {'min','mean','max'}, optional
+    combine: {'min','mean','max','none'}, optional
         Propagate using the mean (default), max or min data from neighboring voxels
     distance_mm: float, optional 
         Distance for the propagation (note: this algorithm will be slow for 

@@ -9,14 +9,15 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_available_memory
 
 
-def linear_fiber_mapping(input_image, ridge_intensities, 
+def linear_fiber_mapping(input_image, ridge_intensities='bright', 
                               min_scale=0, max_scale=3,
                               diffusion_factor=1.0,
                               similarity_scale=0.1,
                               max_iter=100, max_diff=1e-3,
                               threshold=0.5,
                               max_dist=1.0,
-                              inclusion_ratio=0.1,
+                              inclusion_ratio=0.5,
+                              skip_detect=False,
                               extend=False,
                               extend_ratio=0.5,
                               diameter=False,
@@ -53,11 +54,15 @@ def linear_fiber_mapping(input_image, ridge_intensities,
         Maximum distance of voxels to include in lines (default is 1.0)
     inclusion_ratio: float
         Ratio of the highest detection value to include in lines (default is 0.1)
+    skip_detect: bool
+        Skip the linear feature detection step in case it was already done 
+        previously (default is False)
     extend: bool
         Whether or not to extend the estimation results into the background 
         and/or lower values (default is False)
     extend_ratio: float
-        Ratio of the detection value to extend out (default is 0.5)
+        Ratio of the detection value to extend out (default is 0.5, 0.0 uses 
+        spatial distance only)
     diameter: bool
         Whether or not to estimate diameter and partial volume (default is False)
     save_data: bool
@@ -186,6 +191,8 @@ def linear_fiber_mapping(input_image, ridge_intensities,
     lfm.setSimilarityScale(similarity_scale)
     lfm.setMaxIterations(max_iter)
     lfm.setMaxDifference(max_diff)
+    lfm.setSkipDetection(skip_detect)
+    if skip_detect: lfm.setMaskBackground(False)
     lfm.setDetectionThreshold(threshold)
     lfm.setMaxLineDistance(max_dist)
     lfm.setInclusionRatio(inclusion_ratio)
