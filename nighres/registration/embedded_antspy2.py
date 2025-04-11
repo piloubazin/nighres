@@ -8,6 +8,7 @@ import math
 import numpy
 import nibabel
 import ants.utils
+import ants
 
 # nighresjava and nighres functions
 import nighresjava
@@ -23,7 +24,7 @@ Y=1
 Z=2
 T=3
 
-def embedded_antspy(source_image, target_image,
+def embedded_antspy2(source_image, target_image,
                     run_rigid=False,
                     rigid_iterations=1000,
                     run_similarity=False,
@@ -134,7 +135,7 @@ def embedded_antspy(source_image, target_image,
     """
 
     # just overloading the multi-channel version
-    return embedded_antspy_multi([source_image], [target_image],
+    return embedded_antspy2_multi([source_image], [target_image],
                     run_rigid, rigid_iterations, run_similarity, similarity_iterations,
                     run_affine, affine_iterations,
                     run_syn, coarse_iterations, medium_iterations, fine_iterations,
@@ -143,7 +144,7 @@ def embedded_antspy(source_image, target_image,
 					save_data, overwrite, output_dir, file_name)
 
 
-def embedded_antspy_2d(source_image, target_image,
+def embedded_antspy2_2d(source_image, target_image,
                     run_rigid=False,
                     rigid_iterations=1000,
                     run_similarity=False,
@@ -242,7 +243,7 @@ def embedded_antspy_2d(source_image, target_image,
        of elderly and neurodegenerative brain, Med Image Anal. 12(1):26-41
     """
 
-    return embedded_antspy_2d_multi([source_image], [target_image], 
+    return embedded_antspy2_2d_multi([source_image], [target_image], 
                     None,
                     run_rigid, rigid_iterations,
                     run_similarity, similarity_iterations,
@@ -255,7 +256,7 @@ def embedded_antspy_2d(source_image, target_image,
                     save_data, overwrite, output_dir,file_name)
 
 
-def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
+def embedded_antspy2_2d_multi(source_images, target_images, image_weights=None,
                     run_rigid=False,
                     rigid_iterations=1000,
                     run_similarity=False,
@@ -1030,7 +1031,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
 
         return output
 
-def embedded_antspy_multi(source_images, target_images,
+def embedded_antspy2_multi(source_images, target_images,
                     run_rigid=True,
                     rigid_iterations=1000,
                     run_similarity=False,
@@ -1682,16 +1683,24 @@ def embedded_antspy_multi(source_images, target_images,
         else:
             src_at.append('--transform')
             src_at.append('['+transform+',0]')
+    src_at.append('--output')
     src_mapX_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_image,
                                                         suffix='tmp_srccoordX_map'))
-    src_at.append('--output')
     src_at.append(src_mapX_trans)
 
     processed_src_at = ants.utils._int_antsProcessArguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
-    libfn(processed_src_at)
+    #libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    #libfn(processed_src_at)
+
+    src_mapX_trans_img = ants.apply_transforms(fixed=ants.image_read(target.get_filename()),
+                                               moving=ants.image_read(src_mapX.get_filename()),
+                                               transformlist=forward,
+                                               interpolator='linear',imagetype=0,
+                                               whichtoinvert=flag, compose=None,
+                                               defaultvalue=0, singleprecision=False, verbose=True)
+    ants.image_write(src_mapX_trans_img, src_mapX_trans)                                            
 
     src_at = ['--dimensionality','3','--input-image-type','0']
     src_at.append('--input')
@@ -1707,16 +1716,24 @@ def embedded_antspy_multi(source_images, target_images,
         else:
             src_at.append('--transform')
             src_at.append('['+transform+',0]')
+    src_at.append('--output')
     src_mapY_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_image,
                                                         suffix='tmp_srccoordY_map'))
-    src_at.append('--output')
     src_at.append(src_mapY_trans)
 
     processed_src_at = ants.utils._int_antsProcessArguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
-    libfn(processed_src_at)
+    #libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    #libfn(processed_src_at)
+
+    src_mapY_trans_img = ants.apply_transforms(fixed=ants.image_read(target.get_filename()),
+                                               moving=ants.image_read(src_mapY.get_filename()),
+                                               transformlist=forward,
+                                               interpolator='linear',imagetype=0,
+                                               whichtoinvert=flag, compose=None,
+                                               defaultvalue=0, singleprecision=False, verbose=True)
+    ants.image_write(src_mapY_trans_img, src_mapY_trans)                                            
 
     src_at = ['--dimensionality','3','--input-image-type','0']
     src_at.append('--input')
@@ -1732,16 +1749,26 @@ def embedded_antspy_multi(source_images, target_images,
         else:
             src_at.append('--transform')
             src_at.append('['+transform+',0]')
+    src_at.append('--output')
     src_mapZ_trans = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_image,
                                                         suffix='tmp_srccoordZ_map'))
-    src_at.append('--output')
     src_at.append(src_mapZ_trans)
 
     processed_src_at = ants.utils._int_antsProcessArguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
-    libfn(processed_src_at)
+    #libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    #libfn(processed_src_at)
+
+    src_mapZ_trans_img = ants.apply_transforms(fixed=ants.image_read(target.get_filename()),
+                                               moving=ants.image_read(src_mapZ.get_filename()),
+                                               transformlist=forward,
+                                               interpolator='linear',imagetype=0,
+                                               whichtoinvert=flag, compose=None,
+                                               defaultvalue=0, singleprecision=False, verbose=True)
+    ants.image_write(src_mapZ_trans_img, src_mapZ_trans)                                            
+
+
 
     # combine X,Y,Z mappings
     mapX = load_volume(src_mapX_trans).get_fdata()
@@ -1773,9 +1800,18 @@ def embedded_antspy_multi(source_images, target_images,
 
     processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
-    libfn(processed_trg_at)
+    #libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    #libfn(processed_trg_at)
 
+    trg_mapX_trans_img = ants.apply_transforms(fixed=ants.image_read(source.get_filename()),
+                                               moving=ants.image_read(trg_mapX.get_filename()),
+                                               transformlist=inverse,
+                                               interpolator='linear',imagetype=0,
+                                               whichtoinvert=linear, compose=None,
+                                               defaultvalue=0, singleprecision=False, verbose=True)
+    ants.image_write(trg_mapX_trans_img, trg_mapX_trans)                                            
+
+    
     trg_at = ['--dimensionality','3','--input-image-type','0']
     trg_at.append('--input')
     trg_at.append(trg_mapY.get_filename())
@@ -1798,8 +1834,17 @@ def embedded_antspy_multi(source_images, target_images,
 
     processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
-    libfn(processed_trg_at)
+    #libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    #libfn(processed_trg_at)
+
+    trg_mapY_trans_img = ants.apply_transforms(fixed=ants.image_read(source.get_filename()),
+                                               moving=ants.image_read(trg_mapY.get_filename()),
+                                               transformlist=inverse,
+                                               interpolator='linear',imagetype=0,
+                                               whichtoinvert=linear, compose=None,
+                                               defaultvalue=0, singleprecision=False, verbose=True)
+    ants.image_write(trg_mapY_trans_img, trg_mapY_trans)                                            
+
 
     trg_at = ['--dimensionality','3','--input-image-type','0']
     trg_at.append('--input')
@@ -1823,10 +1868,19 @@ def embedded_antspy_multi(source_images, target_images,
 
     processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
-    libfn(processed_trg_at)
+    #libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    #libfn(processed_trg_at)
 
-    # combine X,Y,Z mappings
+    trg_mapZ_trans_img = ants.apply_transforms(fixed=ants.image_read(source.get_filename()),
+                                               moving=ants.image_read(trg_mapZ.get_filename()),
+                                               transformlist=inverse,
+                                               interpolator='linear',imagetype=0,
+                                               whichtoinvert=linear, compose=None,
+                                               defaultvalue=0, singleprecision=False, verbose=True)
+    ants.image_write(trg_mapZ_trans_img, trg_mapZ_trans)                                            
+
+
+    # combine X,Y, Z mappings
     mapX = load_volume(trg_mapX_trans).get_fdata()
     mapY = load_volume(trg_mapY_trans).get_fdata()
     mapZ = load_volume(trg_mapZ_trans).get_fdata()

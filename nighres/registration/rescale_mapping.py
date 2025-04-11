@@ -83,7 +83,8 @@ def rescale_mapping(source_image=None,
     # load and get dimensions and resolution from input images
     source = load_volume(source_image)
     affine = source.affine
-    header = source.header
+    srcheader =  source.header
+    trgheader = source.header.copy()
     nx = source.header.get_data_shape()[X]
     ny = source.header.get_data_shape()[Y]
     nz = source.header.get_data_shape()[Z]
@@ -98,9 +99,9 @@ def rescale_mapping(source_image=None,
     rsy = ry/scaling_factor
     rsz = rz/scaling_factor
     if len(source.header.get_zooms())==3:
-        header.set_zooms((rsx,rsy,rsz))
+        trgheader.set_zooms((rsx,rsy,rsz))
     elif len(source.header.get_zooms())==4:
-        header.set_zooms((rsx,rsy,rsz,source.header.get_zooms()[3]))
+        trgheader.set_zooms((rsx,rsy,rsz,source.header.get_zooms()[3]))
 
     # build coordinate mapping matrices and save them to disk
     mapping = numpy.zeros((nsx,nsy,nsz,3))
@@ -119,8 +120,8 @@ def rescale_mapping(source_image=None,
                 inverse[x,y,z,Y] = y*scaling_factor
                 inverse[x,y,z,Z] = z*scaling_factor
 
-    mapping_img = nibabel.Nifti1Image(mapping, affine, header)
-    inverse_img = nibabel.Nifti1Image(inverse, affine, header)
+    mapping_img = nibabel.Nifti1Image(mapping, affine, trgheader)
+    inverse_img = nibabel.Nifti1Image(inverse, affine, srcheader)
 
     if save_data:
         save_volume(mapping_file, mapping_img)

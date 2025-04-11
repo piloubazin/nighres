@@ -14,10 +14,10 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
                               diffusion_factor=1.0,
                               similarity_scale=0.1,
                               max_iter=100, max_diff=1e-3,
+                              skip_detect=False,
                               threshold=0.5,
                               max_dist=1.0,
-                              inclusion_ratio=0.5,
-                              skip_detect=False,
+                              inclusion=0.25,
                               extend=False,
                               extend_ratio=0.5,
                               diameter=False,
@@ -48,15 +48,15 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
         Maximum number of diffusion iterations
     max_diff: int
         Maximum difference to stop the diffusion
+    skip_detect: bool
+        Whether to perform the ridge detection step or assume the input is a vessel probability
+        (default is False)
     threshold: float
         Detection threshold for the structures to keep (default is 0.5)
     max_dist: float
         Maximum distance of voxels to include in lines (default is 1.0)
-    inclusion_ratio: float
-        Ratio of the highest detection value to include in lines (default is 0.1)
-    skip_detect: bool
-        Skip the linear feature detection step in case it was already done 
-        previously (default is False)
+    inclusion: float
+        Inclusion threshold for growing lines (default is 0.25)
     extend: bool
         Whether or not to extend the estimation results into the background 
         and/or lower values (default is False)
@@ -150,14 +150,25 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
             and os.path.isfile(lines_file) \
             and os.path.isfile(length_file) \
             and os.path.isfile(theta_file) \
-            and os.path.isfile(ani_file) :
+            and os.path.isfile(ani_file) \
+            and (not diameter 
+                or (os.path.isfile(dia_file) and os.path.isfile(pv_file) ) ):
 
             print("skip computation (use existing results)")
-            output = {'proba': proba_file,
-                      'lines': lines_file,
-                      'length': length_file,
-                      'theta': theta_file,
-                      'ani': ani_file}
+            if diameter:
+                output = {'proba': proba_file,
+                          'lines': lines_file,
+                          'length': length_file,
+                          'theta': theta_file,
+                          'ani': ani_file,
+                          'dia': dia_file,
+                          'pv': pv_file}
+            else:
+                output = {'proba': proba_file,
+                          'lines': lines_file,
+                          'length': length_file,
+                          'theta': theta_file,
+                          'ani': ani_file}
             return output
 
 
@@ -195,7 +206,7 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
     if skip_detect: lfm.setMaskBackground(False)
     lfm.setDetectionThreshold(threshold)
     lfm.setMaxLineDistance(max_dist)
-    lfm.setInclusionRatio(inclusion_ratio)
+    lfm.setInclusionThreshold(inclusion)
     lfm.setExtendResult(extend)
     lfm.setExtendRatio(extend_ratio)
     lfm.setEstimateDiameter(diameter)
