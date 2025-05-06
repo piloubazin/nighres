@@ -43,7 +43,7 @@ def intensity_shape_operator(image,
     Ported from original Java module by Pierre-Louis Bazin
     """
 
-    print("\Intensity Shape Operator")
+    print("\n Intensity Shape Operator")
 
     # make sure that saving related parameters are correct
     if save_data:

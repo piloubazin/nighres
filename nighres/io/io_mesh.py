@@ -350,7 +350,7 @@ def _read_vtk(file):
     start_vertices = (vtk_df[vtk_df[0].str.contains(
                                             'POINTS')].index.tolist()[0]) + 1
     vertex_df = pd.read_csv(file, skiprows=range(start_vertices),
-                            nrows=number_vertices, sep='\s+',
+                            nrows=number_vertices, sep=' ',
                             header=None, engine='python')
     if np.array(vertex_df).shape[1] == 3:
         vertex_array = np.array(vertex_df)
