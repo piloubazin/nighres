@@ -11,7 +11,9 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
                       mask=None, distance=3.0, spread=1.0,
                       iterations=4, repeats=10, pairs=2,
-                      smoothness=0.5, thickness=2.0, noise=0.1,
+                      smoothness=0.5, thickness=2.0, 
+                      gwb_offset=3.0, cgb_offset=1.0,
+                      noise=0.1, topology='no',
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Cortical Boundary Adjustment
@@ -46,8 +48,15 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
         Amount of curvature smoothing to use when deforming the levelset, in [0,1] (default is 0.5)
     thickness: float, optional
         Minimum expected thickness of the cortex, in voxels (default is 2.0)
+    gwb_offset: float, optional
+        Offset of the initial GM/WM boundary inside the structure (default is 3.0) 
+    cgb_offset: float, optional
+        Offset of the initial CSF./GM boundary inside the structure (default is 1.0) 
     noise: float, optional
         Noise ratio for supervoxel parcellation (default is 0.1)
+    topology: string, optional
+        Topology properties to maintain in '26/6', '18/6', '6/18', '6/26', '6/6',
+        'wcs', 'wco', 'no' (default is 'no')
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -151,6 +160,9 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     algo.setPairs(pairs)
     algo.setSmoothness(smoothness)
     algo.setMinThickness(thickness)
+    algo.setGwbOffset(gwb_offset)
+    algo.setCgbOffset(cgb_offset)
+    algo.setConnectivity(topology)
     
     # execute the algorithm
     try:
