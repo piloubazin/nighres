@@ -166,7 +166,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     
     # execute the algorithm
     try:
-        algo.executeSuper()
+        algo.executeLocal()
 
     except:
         # if the Java module fails, reraise the error it throws
