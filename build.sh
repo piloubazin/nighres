@@ -204,7 +204,7 @@ $JAVA_HOME/bin/javac -cp ${deps_list} ${javac_opts[@]} nl/fullbrainpicture/algor
 
 echo "Assembling..."
 jar uf ../nighresjava/src/nighresjava.jar nl/fullbrainpicture/algorithms/*.class
-jar cf ../nighresjava/src/fbpa-lib.jar nl/fullbrainpicture/libraries/*.class nl/fullbrainpicture/structures/*.class nl/fullbrainpicture/utilities/*.class
+jar cf ../nighresjava/src/fbpa-lib.jar nl/fullbrainpicture/libraries/*.class nl/fullbrainpicture/structures/*.class nl/fullbrainpicture/structures/*.raw.gz nl/fullbrainpicture/utilities/*.class
 
 cp lib/*.jar ../nighresjava/lib/
 cd ..

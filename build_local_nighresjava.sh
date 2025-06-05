@@ -162,7 +162,7 @@ $JAVA_HOME/bin/javac -cp ${deps_list} ${javac_opts[@]} nl/fullbrainpicture/algor
 echo "Assembling..."
 #jar cf imcntk.jar     nl/uva/imcn/algorithms/*.class
 $JAVA_HOME/bin/jar uf $nighres_local/nighresjava/src/nighresjava.jar nl/fullbrainpicture/algorithms/*.class
-$JAVA_HOME/bin/jar cf $nighres_local/nighresjava/src/fbpa-lib.jar nl/fullbrainpicture/libraries/*.class nl/fullbrainpicture/structures/*.class nl/fullbrainpicture/utilities/*.class
+$JAVA_HOME/bin/jar cf $nighres_local/nighresjava/src/fbpa-lib.jar nl/fullbrainpicture/libraries/*.class nl/fullbrainpicture/structures/*.class nl/fullbrainpicture/structures/*.raw.gz nl/fullbrainpicture/utilities/*.class
 
 cp lib/*.jar $nighres_local/nighresjava/lib/
 
