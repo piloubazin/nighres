@@ -242,8 +242,8 @@ Cerebrum-WMR	60.0	10.0	1.00
 Intensity Prior:	bflidark07
 Background		0.0	    20.0	1.00
 Dura			20.0	20.0	1.00
-Arteries		20.0	30.0	1.00
-Sulcal-CSF		20.0	30.0	1.00
+Arteries		150.0	30.0	1.00
+Sulcal-CSF		45.0	20.0	1.00
 VentricleL		150.0	30.0	1.00
 VentricleR		150.0	30.0	1.00
 Ventricle3		150.0	30.0	1.00
@@ -251,9 +251,9 @@ Ventricle4		20.0	20.0	1.00
 ChoroidPlexusL	20.0	20.0	1.00
 ChoroidPlexusR	20.0	20.0	1.00
 Sinuses			20.0	20.0	1.00
-Cerebellum-GM	95.0	10.0	1.00
-Cerebrum-GML	95.0	10.0	1.00
-Cerebrum-GMR	95.0	10.0	1.00
+Cerebellum-GM	95.0	20.0	1.00
+Cerebrum-GML	90.0	20.0	1.00
+Cerebrum-GMR	90.0	20.0	1.00
 AmygdalaL		80.0	20.0	1.00
 AmygdalaR		80.0	20.0	1.00
 CaudateL		95.0	20.0	1.00
