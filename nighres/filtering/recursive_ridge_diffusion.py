@@ -220,7 +220,7 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     # execute Extraction
     try:
         if dimensions[2]==1: rrd.execute()
-        else rrd.execute(full_output)
+        else: rrd.execute(full_output)
 
     except:
         # if the Java module fails, reraise the error it throws
@@ -236,7 +236,7 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     header['cal_max'] = np.nanmax(propagation_data)
     propag_img = nb.Nifti1Image(propagation_data, affine, header)
 
-    if full_output is True:
+    if full_output:
         filter_data = np.reshape(np.array(rrd.getFilterResponseImage(),
                                        dtype=np.float32), newshape=dimensions, order='F')
     
