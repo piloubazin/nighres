@@ -45,13 +45,13 @@ def spectral_mesh_spatial_embedding(surface_mesh,
     mapping: niimg
         Coordinate mapping from the image to the reference (optional)
     dims: int
-        Number of kept dimensions in the representation (default is 1)
+        Number of kept dimensions in the representation (default is 10)
     msize: int
-        Target matrix size for subsampling (default is 2000)
+        Target matrix size for subsampling (default is 500)
     scale: float
-        Distance scale between sample points (default is 10.0)
+        Distance scale between sample points (default is 50.0)
     space: float
-        Spatial scaling factor (default is 10.0)
+        Spatial scaling factor (default is 50.0)
     link: float
         Spatial linking factor (default is 1.0)
     depth: int
