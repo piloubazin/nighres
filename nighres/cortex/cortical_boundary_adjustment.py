@@ -77,6 +77,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
         * gwb (niimg): The adjusted gwb levelset image
         * cgb (niimg): The adjusted cgb levelset image
+        * seg (niimg): The adjusted segmentation image
         * proba (niimg): The adjustment confidence probability
     Notes
     ----------
@@ -100,6 +101,11 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
                                    rootfile=gwb,
                                    suffix='cba-cgb'))
 
+        seg_file = os.path.join(output_dir, 
+                        _fname_4saving(module=__name__,file_name=file_name,
+                                   rootfile=gwb,
+                                   suffix='cba-seg'))
+
         proba_file = os.path.join(output_dir, 
                         _fname_4saving(module=__name__,file_name=file_name,
                                    rootfile=gwb,
@@ -108,9 +114,10 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
         if overwrite is False \
             and os.path.isfile(gwb_file) \
             and os.path.isfile(cgb_file) \
+            and os.path.isfile(seg_file) \
             and os.path.isfile(proba_file) :
                 print("skip computation (use existing results)")
-                output = {'gwb': gwb_file, 'cgb': cgb_file, 'proba': proba_file}
+                output = {'gwb': gwb_file, 'cgb': cgb_file, 'seg': seg_file, 'proba': proba_file}
                 return output
 
     # start virtual machine, if not already running
@@ -199,6 +206,15 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     header['cal_max'] = np.nanmax(cgb_data)
     cgb = nb.Nifti1Image(cgb_data, affine, header)
 
+    seg_data = np.reshape(np.array(algo.getSegmentationImage(),
+                                    dtype=np.int32), newshape=dimensions, order='F')
+
+    # adapt header max for each image so that correct max is displayed
+    # and create nifiti objects
+    header['cal_min'] = np.nanmin(seg_data)
+    header['cal_max'] = np.nanmax(seg_data)
+    seg = nb.Nifti1Image(seg_data, affine, header)
+
     proba_data = np.reshape(np.array(algo.getProbaImage(),
                                     dtype=np.float32), newshape=dimensions, order='F')
 
@@ -211,7 +227,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     if save_data:
         save_volume(gwb_file, gwb)
         save_volume(cgb_file, cgb)
+        save_volume(seg_file, seg)
         save_volume(proba_file, proba)
-        return {'gwb': gwb_file, 'cgb': cgb_file, 'proba': proba_file}
+        return {'gwb': gwb_file, 'cgb': cgb_file, 'seg': seg_file, 'proba': proba_file}
     else:
-        return {'gwb': gwb, 'cgb': cgb, 'proba': proba}
+        return {'gwb': gwb, 'cgb': cgb, 'seg': seg, 'proba': proba}
