@@ -13,7 +13,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
                       iterations=4, repeats=10, pairs=2,
                       smoothness=0.5, thickness=2.0, 
                       gwb_offset=3.0, cgb_offset=1.0,
-                      noise=0.1, topology='no', stop_dist=0.01,
+                      noise=0.1, topology='no', stop_dist=0.01, cnr=4.0,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Cortical Boundary Adjustment
@@ -59,6 +59,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
         'wcs', 'wco', 'no' (default is 'no')
     stop_dist: float, optional
         Stoping distance for faster computations (default is 0.01)
+    cnr: float, optional
+        Contrast to noise to calibrate the probability function (default is 4.0)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -173,6 +175,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     algo.setCgbOffset(cgb_offset)
     algo.setConnectivity(topology)
     algo.setStoppingDistance(stop_dist)
+    algo.setMeanCNR(cnr)
     
     # execute the algorithm
     try:
