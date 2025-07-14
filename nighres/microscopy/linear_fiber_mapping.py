@@ -55,6 +55,8 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
         Detection threshold for the structures to keep (default is 0.5)
     max_dist: float
         Maximum distance of voxels to include in lines (default is 1.0)
+    min_ratio: float
+        Minimum ratio of distance to length in lines (default is 0.1)
     inclusion: float
         Inclusion threshold for growing lines (default is 0.25)
     extend: bool
@@ -206,6 +208,7 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
     if skip_detect: lfm.setMaskBackground(False)
     lfm.setDetectionThreshold(threshold)
     lfm.setMaxLineDistance(max_dist)
+    lfm.setMinLineRatio(min_ratio)
     lfm.setInclusionThreshold(inclusion)
     lfm.setExtendResult(extend)
     lfm.setExtendRatio(extend_ratio)
