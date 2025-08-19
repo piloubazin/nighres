@@ -18,6 +18,7 @@ imcntk_local="/home/pilou/Code/github/imcn-imaging"
 fbpa_local="/home/pilou/Code/github/fbpa-tools"
 nighres_local="/home/pilou/Code/github/nighres"
 
+
 # Check the system has the necessary commands
 hash wget tar javac jar python3 2>/dev/null || fatal "This script needs the following commands available: wget tar javac jar python3"
 
