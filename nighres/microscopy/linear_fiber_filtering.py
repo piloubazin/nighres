@@ -159,9 +159,20 @@ def linear_fiber_filtering(pv, diameter, theta, length,
     label_img = nb.Nifti1Image(data, affine, header)
 
     # reshape output to what nibabel likes
+    data = np.reshape(np.array(llf.getProbaImage(),
+                                    dtype=np.float32), newshape=dimensions, order='F')
+
+    # adapt header max for each image so that correct max is displayed
+    # and create nifiti objects
+    header['cal_min'] = np.nanmin(data)
+    header['cal_max'] = np.nanmax(data)
+    proba_img = nb.Nifti1Image(data, affine, header)
+
+    # reshape output to what nibabel likes
     if save_data:
         save_volume(label_file, label_img)
-        return {'label': label_file}
+        save_volume(proba_file, proba_img)
+        return {'label': label_file, 'proba': proba_file}
     else:
-        return {'label': label_img}
+        return {'label': label_img, 'proba': proba_img}
         
