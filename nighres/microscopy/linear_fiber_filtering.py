@@ -108,7 +108,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
     if (len(dimensions)==2 or dimensions[2]==1):
         print("2D version")
         llf.setDimensions(dimensions[0], dimensions[1], 1)
-     else:
+    else:
         print("3D version")
         llf.setDimensions(dimensions[0], dimensions[1], dimensions[2])
 
@@ -130,13 +130,13 @@ def linear_fiber_filtering(pv, diameter, theta, length,
    
     if labeling!=None:
     	data = load_volume(labeling).get_fdata()
-        dlc.setParcellationImage(nighresjava.JArray('int')(
+        llf.setParcellationImage(nighresjava.JArray('int')(
                                 (data.flatten('F')).astype(int).tolist()))
 
     # set algorithm parameters
-    dlc.setThicknesses(nighresjava.JArray('float')(thickness.astype(float)))
-    dlc.setAngles(nighresjava.JArray('float')(angle.astype(float)))
-    dlc.setSizes(nighresjava.JArray('float')(size.astype(float)))
+    llf.setThicknesses(nighresjava.JArray('float')(thickness.astype(float)))
+    llf.setAngles(nighresjava.JArray('float')(angle.astype(float)))
+    llf.setSizes(nighresjava.JArray('float')(size.astype(float)))
     
     # execute the algorithm
     try:
