@@ -129,7 +129,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
                                     (data.flatten('F')).astype(float)))
    
     if labeling!=None:
-    	data = load_volume(labeling).get_fdata()
+        data = load_volume(labeling).get_fdata()
         llf.setParcellationImage(nighresjava.JArray('int')(
                                 (data.flatten('F')).astype(int).tolist()))
 
