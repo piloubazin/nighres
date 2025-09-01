@@ -134,9 +134,9 @@ def linear_fiber_filtering(pv, diameter, theta, length,
                                 (data.flatten('F')).astype(int).tolist()))
 
     # set algorithm parameters
-    llf.setThicknesses(nighresjava.JArray('float')(thickness.astype(float)))
-    llf.setAngles(nighresjava.JArray('float')(angle.astype(float)))
-    llf.setSizes(nighresjava.JArray('float')(size.astype(float)))
+    llf.setThicknesses(nighresjava.JArray('float')(thickness))
+    llf.setAngles(nighresjava.JArray('float')(angle))
+    llf.setSizes(nighresjava.JArray('float')(size))
     
     # execute the algorithm
     try:
