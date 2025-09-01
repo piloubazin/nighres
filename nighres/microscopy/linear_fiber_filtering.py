@@ -10,7 +10,8 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 def linear_fiber_filtering(pv, diameter, theta, length,
                             labeling=None, 
-                            thickness=[0.0,5.0,100.0], angle=[30,60], size=[3,200]
+                            thickness=[0.0,5.0,100.0], angle=[30,60], size=[3,200],
+                            smooth=False,
                             save_data=False, overwrite=False, output_dir=None,
                             file_name=None):
     """ Linear fiber filtering
@@ -37,6 +38,8 @@ def linear_fiber_filtering(pv, diameter, theta, length,
         Angle in degrees to expect between associated lines and underlying anatomy 
     size: [float]
         Size groups for associated lines
+    smooth: bool
+        Smooth labeling surfaces for better angle definition (default is False)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool

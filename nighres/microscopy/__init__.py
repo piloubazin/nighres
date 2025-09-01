@@ -10,3 +10,4 @@ from nighres.microscopy.linear_fiber_vector_averaging import linear_fiber_vector
 from nighres.microscopy.linear_fiber_vector_estimation import linear_fiber_vector_estimation
 from nighres.microscopy.oct_contrast_integration import oct_contrast_integration
 from nighres.microscopy.oct_multiview_combination import oct_multiview_combination
+from nighres.microscopy.linear_fiber_filtering import linear_fiber_filtering
