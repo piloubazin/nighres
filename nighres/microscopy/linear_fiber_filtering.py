@@ -11,7 +11,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 def linear_fiber_filtering(pv, diameter, theta, length,
                             labeling=None, 
                             thickness=[0.0,5.0], angle=[30.0,60.0], size=[3.0,200.0],
-                            smooth=0.0,
+                            smooth=0.0,scale=10.0,
                             save_data=False, overwrite=False, output_dir=None,
                             file_name=None):
     """ Linear fiber filtering
@@ -39,7 +39,9 @@ def linear_fiber_filtering(pv, diameter, theta, length,
     size: [float]
         Size groups for associated lines
     smooth: float
-        Smoothing ratio for labeling surfaces for better angle definition (default is 0.0)
+        Smoothing ratio for labeling surfaces to improve angle definition (default is 0.0)
+    scale: float
+        Smoothing scale for labeling surfaces to improve angle definition (default is 0.0)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -139,6 +141,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
     llf.setSizes(nighresjava.JArray('float')(size))
     
     llf.setSmooth(smooth)
+    llf.setScale(scale)
     
     # execute the algorithm
     try:
