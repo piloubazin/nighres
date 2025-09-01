@@ -10,7 +10,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 def linear_fiber_filtering(pv, diameter, theta, length,
                             labeling=None, 
-                            thickness=[0.0,5.0,100.0], angle=[30,60], size=[3,200],
+                            thickness=[0.0,5.0], angle=[30.0,60.0], size=[3.0,200.0],
                             smooth=False,
                             save_data=False, overwrite=False, output_dir=None,
                             file_name=None):
@@ -140,7 +140,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
     
     # execute the algorithm
     try:
-    	lff.execute()
+    	llf.execute()
     except:
         # if the Java module fails, reraise the error it throws
         print("\n The underlying Java code did not execute cleanly: ")
@@ -149,7 +149,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
         return
 
     # reshape output to what nibabel likes
-    data = np.reshape(np.array(lff.getLabelImage(),
+    data = np.reshape(np.array(llf.getLabelImage(),
                                     dtype=np.int32), newshape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
