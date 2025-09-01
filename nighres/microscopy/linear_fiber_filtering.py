@@ -112,7 +112,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
         print("3D version")
         llf.setDimensions(dimensions[0], dimensions[1], dimensions[2])
 
-    llf.setPvImage(nighresjava.JArray('float')(
+    llf.setPartialVolumeImage(nighresjava.JArray('float')(
                                     (data.flatten('F')).astype(float)))
 
     # load other image files
@@ -121,7 +121,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
                                     (data.flatten('F')).astype(float)))
     
     data = load_volume(theta).get_fdata()
-    llf.setThetaImage(nighresjava.JArray('float')(
+    llf.setAngleImage(nighresjava.JArray('float')(
                                     (data.flatten('F')).astype(float)))
     
     data = load_volume(length).get_fdata()
