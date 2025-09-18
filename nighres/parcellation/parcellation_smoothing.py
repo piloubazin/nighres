@@ -104,9 +104,16 @@ def parcellation_smoothing(parcellation, probability=None, connectivity="none",
     aff = img.affine
     resolution = [x.item() for x in hdr.get_zooms()]
     dimensions = data.shape
-
-    algorithm.setResolutions(resolution[0], resolution[1], resolution[2])
-    algorithm.setDimensions(dimensions[0], dimensions[1], dimensions[2])
+    if (len(dimensions)==2 or dimensions[2]==1):
+        print("2D version")
+        algorithm.setDimensions(dimensions[0], dimensions[1], 1)
+        algorithm.setResolutions(resolution[0], resolution[1], 1.0)
+    
+    else:
+        print("3D version")
+        algorithm.setDimensions(dimensions[0], dimensions[1], dimensions[2])
+        algorithm.setResolutions(resolution[0], resolution[1], resolution[2])
+    
 
     algorithm.setParcellationImage(nighresjava.JArray('int')(
                                 (data.flatten('F')).astype(int).tolist()))
