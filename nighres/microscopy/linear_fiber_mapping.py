@@ -11,7 +11,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 def linear_fiber_mapping(input_image, ridge_intensities='bright', 
                               min_scale=0, max_scale=3,
-                              relative_contrast=false,
+                              relative_contrast=False,
                               diffusion_factor=1.0,
                               similarity_scale=0.1,
                               max_iter=100, max_diff=1e-3,
