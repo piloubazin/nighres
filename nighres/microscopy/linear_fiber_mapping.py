@@ -11,7 +11,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 def linear_fiber_mapping(input_image, ridge_intensities='bright', 
                               min_scale=0, max_scale=3,
-                              relative_contrast=False,
+                              max_proba=False,
                               diffusion_factor=1.0,
                               similarity_scale=0.1,
                               max_iter=100, max_diff=1e-3,
@@ -42,9 +42,9 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
         Minimum scale (in voxels) to look for features (default is 0)
     max_scale: int
         Maximum scale (in voxels) to look for features (default is 3)
-    relative_contrast: bool
-        Whether to use relative contrast locally to detect the vessels
-        (default is False)
+    max_proba: bool
+        Whether to use max or mean for grouped vessel probabilities
+        (default is False, using mean)
     diffusion_factor: float
         Scaling factor for the diffusion weighting in [0,1] (default is 1.0)
     similarity_scale: float
@@ -205,7 +205,7 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
     lfm.setRidgeIntensities(ridge_intensities)
     lfm.setMinimumScale(min_scale)
     lfm.setMaximumScale(max_scale)
-    lfm.setRelativeContrast(relative_contrast)
+    lfm.setUseMaxProba(max_proba)
     lfm.setDiffusionFactor(diffusion_factor)
     lfm.setSimilarityScale(similarity_scale)
     lfm.setMaxIterations(max_iter)
