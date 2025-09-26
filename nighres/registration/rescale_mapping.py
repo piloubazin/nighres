@@ -59,8 +59,8 @@ def rescale_mapping(source_image=None,
     print('\nRescale mapping')
 
     # make sure that saving related parameters are correct
-    output_dir = _output_dir_4saving(output_dir, source_image) # needed for intermediate results
     if save_data:
+        output_dir = _output_dir_4saving(output_dir, source_image) # needed for intermediate results
         mapping_file = os.path.join(output_dir, 
                         _fname_4saving(module=__name__,file_name=file_name,
                                    rootfile=source_image,
