@@ -626,3 +626,128 @@ def spectral_voxel_data_embedding(image,
             return {'result': coord_img}
 
 
+def spectral_voxel_mapping(image, 
+                    embedding,
+                    dims=3,
+                    bins=100,
+                    save_data=False, 
+                    overwrite=False, 
+                    output_dir=None,
+                    file_name=None):
+
+    """ Spectral voxel mapping
+    
+    Map image data from voxel domain to embedding space
+
+    Parameters
+    ----------
+    image: niimg
+        Image of the structure of interest
+    embedding: niimg
+        Embedding to project into
+    dims: int
+        Number of kept dimensions in the representation (default is 3)
+    bins: int
+        Number of coordinate bins to use, resolution of the output (default is 100)
+    save_data: bool, optional
+        Save output data to file (default is False)
+    output_dir: str, optional
+        Path to desired output directory, will be created if it doesn't exist
+    file_name: str, optional
+        Desired base name for output files with file extension
+        (suffixes will be added)
+
+    Returns
+    ----------
+    dict
+        Dictionary collecting outputs under the following keys
+        (suffix of output files in brackets)
+
+        * result (niimg): Mapped image (_svm-img)
+
+    Notes
+    ----------
+    
+    References
+    ----------
+
+    """
+
+    print("\nSpectral Voxel Mapping")
+
+    if save_data:
+        output_dir = _output_dir_4saving(output_dir, image)
+
+        mapped_file = os.path.join(output_dir, 
+                            _fname_4saving(module=__name__,file_name=file_name,
+                                  rootfile=image,
+                                  suffix='svm-img'))
+        
+        if overwrite is False \
+            and os.path.isfile(mapped_file) :
+                print("skip computation (use existing results)")
+                output = {'result': mapped_file}
+                return output
+
+    # start virtual machine, if not already running
+    try:
+        mem = _check_available_memory()
+        nighresjava.initVM(initialheap=mem['init'], maxheap=mem['max'])
+    except ValueError:
+        pass
+    # create algorithm instance
+    algorithm = nighresjava.SpectralVoxelMapping()
+
+    # load the data
+    image = load_volume(image)
+    data = image.get_fdata()
+    affine = image.affine
+    header = image.header
+    resolution = [x.item() for x in header.get_zooms()]
+    dimensions = image.shape
+    dimensions4 = (dimensions[0],dimensions[1],dimensions[2],dims)
+    
+    if len(dimensions)==3: 
+        algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2], 1)
+    else:
+        algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2], dimensions[3])
+    algorithm.setImageResolutions(resolution[0], resolution[1], resolution[2])
+
+    algorithm.setInputImage(nighresjava.JArray('float')(
+                               (data.flatten('F')).astype(float)))
+
+    embedding = load_volume(embedding)
+    algorithm.setMapping(nighresjava.JArray('float')(
+                               (embedding.get_fdata().flatten('F')).astype(float)))
+            
+    
+    algorithm.setDimensions(dims)
+    algorithm.setCoordinateBins(bins)
+    
+
+    # execute
+    try:
+        algorithm.execute()
+    except:
+        # if the Java module fails, reraise the error it throws
+        print("\n The underlying Java code did not execute cleanly: ")
+        print(sys.exc_info()[0])
+        raise
+        return
+
+    # Collect output
+    mapped_data = np.reshape(np.array(algorithm.getEmbeddedImage(),
+                               dtype=np.float32), newshape=dimensions, order='F')
+    
+    # adapt header max for each image so that correct max is displayed
+    # and create nifiti objects
+    header['cal_min'] = np.nanmin(mapped_data)
+    header['cal_max'] = np.nanmax(mapped_data)
+    mapped_img = nb.Nifti1Image(mapped_data, affine, header)
+
+    if save_data:
+        save_volume(mapped_file, mapped_img)
+        return {'result': mapped_file}
+    else:
+        return {'result': mapped_img}
+

@@ -11,4 +11,5 @@ from nighres.shape.spectral_matrix_embedding import spectral_matrix_embedding
 from nighres.shape.spectral_voxel_embedding import spectral_voxel_spatial_embedding
 from nighres.shape.spectral_voxel_embedding import spectral_voxel_thickness_embedding
 from nighres.shape.spectral_voxel_embedding import spectral_voxel_data_embedding
+from nighres.shape.spectral_voxel_embedding import spectral_voxel_mapping
 
