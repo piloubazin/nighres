@@ -705,7 +705,18 @@ def spectral_voxel_mapping(image,
     header = image.header
     resolution = [x.item() for x in header.get_zooms()]
     dimensions = image.shape
-    dimensions4 = (dimensions[0],dimensions[1],dimensions[2],dims)
+    
+    if (dims>4):
+        print("only up to 4 dimensions supported")
+        return
+        
+    if (dims==2): 
+        embeddims = (bins,bins)
+    elif (dims==3):
+        embeddims = (bins,bins,bins)
+    elif (dims==4):
+        embeddims = (bins,bins,bins,bins)
+        
     
     algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2])
     algorithm.setImageResolutions(resolution[0], resolution[1], resolution[2])
@@ -734,7 +745,7 @@ def spectral_voxel_mapping(image,
 
     # Collect output
     mapped_data = np.reshape(np.array(algorithm.getEmbeddedImage(),
-                               dtype=np.float32), newshape=dimensions, order='F')
+                               dtype=np.float32), newshape=embeddims, order='F')
     
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
