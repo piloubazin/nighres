@@ -714,7 +714,7 @@ def spectral_voxel_mapping(image,
                                (data.flatten('F')).astype(float)))
 
     embedding = load_volume(embedding)
-    algorithm.setMapping(nighresjava.JArray('float')(
+    algorithm.setEmbeddingImage(nighresjava.JArray('float')(
                                (embedding.get_fdata().flatten('F')).astype(float)))
             
     
