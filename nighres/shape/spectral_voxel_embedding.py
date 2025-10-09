@@ -707,10 +707,7 @@ def spectral_voxel_mapping(image,
     dimensions = image.shape
     dimensions4 = (dimensions[0],dimensions[1],dimensions[2],dims)
     
-    if len(dimensions)==3: 
-        algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2], 1)
-    else:
-        algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2], dimensions[3])
+    algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2])
     algorithm.setImageResolutions(resolution[0], resolution[1], resolution[2])
 
     algorithm.setInputImage(nighresjava.JArray('float')(
