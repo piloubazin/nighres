@@ -195,8 +195,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
-    header['cal_min'] = np.nanmin(gwb_data)
-    header['cal_max'] = np.nanmax(gwb_data)
+    #header['cal_min'] = np.nanmin(gwb_data)
+    #header['cal_max'] = np.nanmax(gwb_data)
     gwb = nb.Nifti1Image(gwb_data, affine, header)
 
     # reshape output to what nibabel likes
@@ -205,8 +205,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
-    header['cal_min'] = np.nanmin(cgb_data)
-    header['cal_max'] = np.nanmax(cgb_data)
+    #header['cal_min'] = np.nanmin(cgb_data)
+    #header['cal_max'] = np.nanmax(cgb_data)
     cgb = nb.Nifti1Image(cgb_data, affine, header)
 
     seg_data = np.reshape(np.array(algo.getSegmentationImage(),
@@ -214,8 +214,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
-    header['cal_min'] = np.nanmin(seg_data)
-    header['cal_max'] = np.nanmax(seg_data)
+    #header['cal_min'] = np.nanmin(seg_data)
+    #header['cal_max'] = np.nanmax(seg_data)
     seg = nb.Nifti1Image(seg_data, affine, header)
 
     proba_data = np.reshape(np.array(algo.getProbaImage(),
@@ -223,8 +223,8 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
-    header['cal_min'] = np.nanmin(proba_data)
-    header['cal_max'] = np.nanmax(proba_data)
+    #header['cal_min'] = np.nanmin(proba_data)
+    #header['cal_max'] = np.nanmax(proba_data)
     proba = nb.Nifti1Image(proba_data, affine, header)
 
     if save_data:
