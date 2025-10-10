@@ -712,7 +712,7 @@ def spectral_voxel_mapping(image,
     
     if isinstance(bins,tuple):
         embeddims = bins
-    elif (dims==): 
+    elif (dims==1): 
         embeddims = (bins)
     elif (dims==2): 
         embeddims = (bins,bins)
