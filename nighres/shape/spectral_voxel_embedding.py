@@ -735,7 +735,7 @@ def spectral_voxel_mapping(image,
     
     algorithm.setDimensions(dims)
     for d in range(dims):
-        algorithm.setBinAt(d, embeddim[d])
+        algorithm.setBinAt(d, embeddims[d])
     
 
     # execute
