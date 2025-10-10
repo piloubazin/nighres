@@ -629,7 +629,7 @@ def spectral_voxel_data_embedding(image,
 def spectral_voxel_mapping(image, 
                     embedding,
                     dims=3,
-                    bins=100,
+                    bins=(100,100,50),
                     save_data=False, 
                     overwrite=False, 
                     output_dir=None,
@@ -647,7 +647,7 @@ def spectral_voxel_mapping(image,
         Embedding to project into
     dims: int
         Number of kept dimensions in the representation (default is 3)
-    bins: int
+    bins: int or (int,)
         Number of coordinate bins to use, resolution of the output (default is 100)
     save_data: bool, optional
         Save output data to file (default is False)
@@ -709,8 +709,12 @@ def spectral_voxel_mapping(image,
     if (dims>4):
         print("only up to 4 dimensions supported")
         return
-        
-    if (dims==2): 
+    
+    if isinstance(bins,tuple):
+        embeddims = bins
+    elif (dims==): 
+        embeddims = (bins)
+    elif (dims==2): 
         embeddims = (bins,bins)
     elif (dims==3):
         embeddims = (bins,bins,bins)
@@ -730,7 +734,8 @@ def spectral_voxel_mapping(image,
             
     
     algorithm.setDimensions(dims)
-    algorithm.setCoordinateBins(bins)
+    for d in range(dims):
+        algorithm.setBinAt(d, embeddim[d])
     
 
     # execute
