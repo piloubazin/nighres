@@ -630,6 +630,7 @@ def spectral_voxel_mapping(image,
                     embedding,
                     dims=3,
                     bins=(100,100,50),
+                    smooth=0.0,
                     save_data=False, 
                     overwrite=False, 
                     output_dir=None,
@@ -649,6 +650,8 @@ def spectral_voxel_mapping(image,
         Number of kept dimensions in the representation (default is 3)
     bins: int or (int,)
         Number of coordinate bins to use, resolution of the output (default is 100)
+    smooth: float or (float,)
+        Gaussian spread of values across dimensions, in voxels (default is 0)
     save_data: bool, optional
         Save output data to file (default is False)
     output_dir: str, optional
@@ -721,6 +724,17 @@ def spectral_voxel_mapping(image,
     elif (dims==4):
         embeddims = (bins,bins,bins,bins)
         
+    if isinstance(smooth,tuple):
+        smoothing = smooth
+    elif (dims==1): 
+        smoothing = (smooth)
+    elif (dims==2): 
+        smoothing = (smooth,smooth)
+    elif (dims==3):
+        smoothing = (smooth,smooth,smooth)
+    elif (dims==4):
+        smoothing = (smooth,smooth,smooth,smooth)
+        
     
     algorithm.setImageDimensions(dimensions[0], dimensions[1], dimensions[2])
     algorithm.setImageResolutions(resolution[0], resolution[1], resolution[2])
@@ -736,6 +750,9 @@ def spectral_voxel_mapping(image,
     algorithm.setDimensions(dims)
     for d in range(dims):
         algorithm.setBinAt(d, embeddims[d])
+    
+    for d in range(dims):
+        algorithm.setSmoothAt(d, smoothing[d])
     
 
     # execute
