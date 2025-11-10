@@ -9,6 +9,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def boundary_sharpness(image, mask=None, scaling=16.0, noise_level=0.002, iterations=-1,
+                      signed=False,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ Boundary Sharpness
@@ -28,6 +29,8 @@ def boundary_sharpness(image, mask=None, scaling=16.0, noise_level=0.002, iterat
         Weighting parameter to balance image intensity and spatial variability
     iterations: int, optional
         Maximum number of iterations in the boundary estimate (default is 10)
+    signed: bool
+        Whether to output signed boundary values (default is False)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -141,6 +144,7 @@ def boundary_sharpness(image, mask=None, scaling=16.0, noise_level=0.002, iterat
     bsharp.setScalingFactor(scaling)
     bsharp.setNoiseLevel(noise_level)
     bsharp.setIterations(iterations)
+    bsharp.setSignedBoundaries(signed)
     
     # execute the algorithm
     try:
