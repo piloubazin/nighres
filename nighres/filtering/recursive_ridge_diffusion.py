@@ -263,19 +263,19 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
 
         # adapt header max for each image so that correct max is displayed
         # and create nifiti objects
-        header['cal_max'] = np.nanmax(filter_data)
+        #header['cal_max'] = np.nanmax(filter_data)
         filter_img = nb.Nifti1Image(filter_data, affine, header)
     
-        header['cal_max'] = np.nanmax(scale_data)
+        #header['cal_max'] = np.nanmax(scale_data)
         scale_img = nb.Nifti1Image(scale_data, affine, header)
     
-        header['cal_max'] = np.nanmax(ridge_direction_data)
+        #header['cal_max'] = np.nanmax(ridge_direction_data)
         ridge_dir_img = nb.Nifti1Image(ridge_direction_data, affine, header)
     
-        header['cal_max'] = np.nanmax(ridge_pv_data)
+        #header['cal_max'] = np.nanmax(ridge_pv_data)
         ridge_pv_img = nb.Nifti1Image(ridge_pv_data, affine, header)
     
-        header['cal_max'] = np.nanmax(ridge_size_data)
+        #header['cal_max'] = np.nanmax(ridge_size_data)
         ridge_size_img = nb.Nifti1Image(ridge_size_data, affine, header)
 
         if save_data:
