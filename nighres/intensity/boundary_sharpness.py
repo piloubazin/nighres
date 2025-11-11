@@ -195,4 +195,4 @@ def boundary_sharpness(image, mask=None, scaling=16.0, noise_level=0.002, iterat
         save_volume(sharpness_file, sharpness)
         return {'parcel': parcel_file, 'boundaries': boundaries_file,
                 'cnr': cnr_file, 'sharpness': sharpness_file}
-        return {'parcel': parcel, 'boundaries': boundaries, 'cnr': cnr, 'shrapness': sharpness}
+        return {'parcel': parcel, 'boundaries': boundaries, 'cnr': cnr, 'sharpness': sharpness}

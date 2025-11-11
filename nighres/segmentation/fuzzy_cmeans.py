@@ -164,14 +164,14 @@ def fuzzy_cmeans(image, clusters=3, max_iterations=50, max_difference=0.01,
     classification_data = np.reshape(np.array(rfcm.getClassification(),
                                    dtype=np.int32), newshape=dimensions, order='F')
 
-    header['cal_max'] = np.nanmax(classification_data)
+    #header['cal_max'] = np.nanmax(classification_data)
     classification = nb.Nifti1Image(classification_data, affine, header)
 
     memberships = []
     for c in range(clusters):
         mem_data = np.reshape(np.array(rfcm.getMembership(c),
                                     dtype=np.float32), newshape=dimensions, order='F')    
-        header['cal_max'] = np.nanmax(mem_data)
+        #header['cal_max'] = np.nanmax(mem_data)
         membership = nb.Nifti1Image(mem_data, affine, header)
         memberships.append(membership)
 
@@ -179,8 +179,8 @@ def fuzzy_cmeans(image, clusters=3, max_iterations=50, max_difference=0.01,
         intens_data = np.reshape(np.array(rfcm.getClassImage(),
                                    dtype=np.float32), newshape=dimensions, order='F')
 
-        header['cal_min'] = np.nanmin(intens_data)
-        header['cal_max'] = np.nanmax(intens_data)
+        #header['cal_min'] = np.nanmin(intens_data)
+        #header['cal_max'] = np.nanmax(intens_data)
         intensity = nb.Nifti1Image(intens_data, affine, header)
 
     if save_data:
