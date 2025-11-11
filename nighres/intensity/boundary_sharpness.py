@@ -163,29 +163,29 @@ def boundary_sharpness(image, mask=None, scaling=16.0, noise_level=0.002, iterat
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
-    header['cal_min'] = np.nanmin(parcel_data)
-    header['cal_max'] = np.nanmax(parcel_data)
+    #header['cal_min'] = np.nanmin(parcel_data)
+    #header['cal_max'] = np.nanmax(parcel_data)
     parcel = nb.Nifti1Image(parcel_data, affine, header)
 
     boundaries_data = np.reshape(np.array(bsharp.getBoundariesImage(),
                                     dtype=np.float32), newshape=dimensions, order='F')
 
-    header['cal_min'] = np.nanmin(boundaries_data)
-    header['cal_max'] = np.nanmax(boundaries_data)
+    #header['cal_min'] = np.nanmin(boundaries_data)
+    #header['cal_max'] = np.nanmax(boundaries_data)
     boundaries = nb.Nifti1Image(boundaries_data, affine, header)
 
     cnr_data = np.reshape(np.array(bsharp.getCNRImage(),
                                     dtype=np.float32), newshape=dimensions, order='F')
 
-    header['cal_min'] = np.nanmin(cnr_data)
-    header['cal_max'] = np.nanmax(cnr_data)
+    #header['cal_min'] = np.nanmin(cnr_data)
+    #header['cal_max'] = np.nanmax(cnr_data)
     cnr = nb.Nifti1Image(cnr_data, affine, header)
 
     sharpness_data = np.reshape(np.array(bsharp.getSharpnessImage(),
                                     dtype=np.float32), newshape=dimensions, order='F')
 
-    header['cal_min'] = np.nanmin(sharpness_data)
-    header['cal_max'] = np.nanmax(sharpness_data)
+    #header['cal_min'] = np.nanmin(sharpness_data)
+    #header['cal_max'] = np.nanmax(sharpness_data)
     sharpness = nb.Nifti1Image(sharpness_data, affine, header)
 
     if save_data:
