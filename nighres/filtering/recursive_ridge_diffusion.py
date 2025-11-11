@@ -233,7 +233,7 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
     propagation_data = np.reshape(np.array(rrd.getPropagatedResponseImage(),
                                     dtype=np.float32), newshape=dimensions, order='F')
     
-    header['cal_max'] = np.nanmax(propagation_data)
+    #header['cal_max'] = np.nanmax(propagation_data)
     propag_img = nb.Nifti1Image(propagation_data, affine, header)
 
     if full_output:
