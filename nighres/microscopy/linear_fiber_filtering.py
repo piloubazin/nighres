@@ -9,7 +9,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def linear_fiber_filtering(pv, diameter, theta, length,
-                            labeling=None, 
+                            labeling=None, clusters=0,
                             thickness=[0.0,5.0], angle=[30.0,60.0], size=[3.0,200.0],
                             smooth=0.0,scale=10.0,
                             save_data=False, overwrite=False, output_dir=None,
@@ -32,6 +32,8 @@ def linear_fiber_filtering(pv, diameter, theta, length,
     labeling: niimg, optional
         Reference 2D images with anatomical labels to define directions 
         (default is None, for constant directions)
+    clusters: int
+        Number of local clusters to define in each region, if using clustering
     thickness: [float]
         Thickness groups for associated lines
     angle: [float]
@@ -136,6 +138,8 @@ def linear_fiber_filtering(pv, diameter, theta, length,
                                 (data.flatten('F')).astype(int).tolist()))
 
     # set algorithm parameters
+    llf.setClusters(clusters)
+    
     llf.setThicknesses(nighresjava.JArray('float')(thickness))
     llf.setAngles(nighresjava.JArray('float')(angle))
     llf.setSizes(nighresjava.JArray('float')(size))
