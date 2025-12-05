@@ -537,12 +537,12 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     sources = []
     targets = []
     for idx,img in enumerate(source_images):
-        img = load_volume(source_images[0])
+        img = load_volume(source_images[idx])
         img = nibabel.Nifti1Image(img.get_fdata(),source.affine,source.header)
         sources.append(img)
         
     for idx,img in enumerate(target_images):
-        img = load_volume(target_images[0])
+        img = load_volume(target_images[idx])
         img = nibabel.Nifti1Image(img.get_fdata(),target.affine,target.header)
         targets.append(img)
 
@@ -1300,12 +1300,12 @@ def embedded_antspy_multi(source_images, target_images,
     sources = []
     targets = []
     for idx,img in enumerate(source_images):
-        img = load_volume(source_images[0])
+        img = load_volume(source_images[idx])
         img = nibabel.Nifti1Image(img.get_fdata(),source.affine,source.header)
         sources.append(img)
         
     for idx,img in enumerate(target_images):
-        img = load_volume(target_images[0])
+        img = load_volume(target_images[idx])
         img = nibabel.Nifti1Image(img.get_fdata(),target.affine,target.header)
         targets.append(img)
 
