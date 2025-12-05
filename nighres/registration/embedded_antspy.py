@@ -405,147 +405,146 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
                 return output
 
 
-    # load and get dimensions and resolution from input images
-    sources = []
-    targets = []
-    src_img_files = []
-    trg_img_files = []
-    for idx,img in enumerate(source_images):
-        source = load_volume(source_images[idx])
+    # load and get dimensions and resolution from first input images
+    source = load_volume(source_images[0])
+    src_affine = source.affine
+    src_header = source.header
+    nsx = source.header.get_data_shape()[X]
+    nsy = source.header.get_data_shape()[Y]
+    nsz = 1
+    rsx = source.header.get_zooms()[X]
+    rsy = source.header.get_zooms()[Y]
+    rsz = 1.0
+
+    orig_src_aff = source.affine
+    orig_src_hdr = source.header
+
+    target = load_volume(target_images[0])
+    trg_affine = target.affine
+    trg_header = target.header
+    ntx = target.header.get_data_shape()[X]
+    nty = target.header.get_data_shape()[Y]
+    ntz = 1
+    rtx = target.header.get_zooms()[X]
+    rty = target.header.get_zooms()[Y]
+    rtz = 1.0
+
+    orig_trg_aff = target.affine
+    orig_trg_hdr = target.header
+
+    # in case the affine transformations are not to be trusted: make them equal
+    if ignore_affine or ignore_orient or ignore_res:
+        mx = numpy.argmax(numpy.abs(src_affine[0][0:3]))
+        my = numpy.argmax(numpy.abs(src_affine[1][0:3]))
+        mz = numpy.argmax(numpy.abs(src_affine[2][0:3]))
+        new_affine = numpy.zeros((4,4))
+        if ignore_res:
+            new_affine[0][:] = src_affine[0][:]/rsx
+            new_affine[1][:] = src_affine[1][:]/rsy
+            new_affine[2][:] = src_affine[2][:]/rsz
+            rsx = 1.0
+            rsy = 1.0
+            rsz = 1.0
+
+        if ignore_orient:
+            new_affine[0][0] = rsx
+            new_affine[1][1] = rsy
+            new_affine[2][2] = rsz
+            new_affine[0][3] = -rsx*nsx/2.0
+            new_affine[1][3] = -rsy*nsy/2.0
+            new_affine[2][3] = -rsz*nsz/2.0
+        elif ignore_affine:
+            new_affine[0][mx] = rsx*numpy.sign(src_affine[0][mx])
+            new_affine[1][my] = rsy*numpy.sign(src_affine[1][my])
+            new_affine[2][mz] = rsz*numpy.sign(src_affine[2][mz])
+            if (numpy.sign(src_affine[0][mx])<0):
+                new_affine[0][3] = rsx*nsx/2.0
+            else:
+                new_affine[0][3] = -rsx*nsx/2.0
+
+            if (numpy.sign(src_affine[1][my])<0):
+                new_affine[1][3] = rsy*nsy/2.0
+            else:
+                new_affine[1][3] = -rsy*nsy/2.0
+
+            if (numpy.sign(src_affine[2][mz])<0):
+                new_affine[2][3] = rsz*nsz/2.0
+            else:
+                new_affine[2][3] = -rsz*nsz/2.0
+        new_affine[3][3] = 1.0
+
+        src_img = nibabel.Nifti1Image(source.get_fdata(), new_affine, source.header)
+        src_img.update_header()
+        src_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_srcimg'+str(idx)))
+        save_volume(src_img_file, src_img)
+        source = load_volume(src_img_file)
         src_affine = source.affine
         src_header = source.header
-        nsx = source.header.get_data_shape()[X]
-        nsy = source.header.get_data_shape()[Y]
-        nsz = 1
-        rsx = source.header.get_zooms()[X]
-        rsy = source.header.get_zooms()[Y]
-        rsz = 1.0
+        
+        # create generic affine aligned with the orientation for the target
+        mx = numpy.argmax(numpy.abs(trg_affine[0][0:3]))
+        my = numpy.argmax(numpy.abs(trg_affine[1][0:3]))
+        mz = numpy.argmax(numpy.abs(trg_affine[2][0:3]))
+        new_affine = numpy.zeros((4,4))
+        if ignore_res:
+            new_affine[0][:] = trg_affine[0][:]/rtx
+            new_affine[1][:] = trg_affine[1][:]/rty
+            new_affine[2][:] = trg_affine[2][:]/rtz
+            rtx = 1.0
+            rty = 1.0
+            rtz = 1.0
 
-        orig_src_aff = source.affine
-        orig_src_hdr = source.header
+        if ignore_orient:
+            new_affine[0][0] = rtx
+            new_affine[1][1] = rty
+            new_affine[2][2] = rtz
+            new_affine[0][3] = -rtx*ntx/2.0
+            new_affine[1][3] = -rty*nty/2.0
+            new_affine[2][3] = -rtz*ntz/2.0
+        elif ignore_affine:
+            new_affine[0][mx] = rtx*numpy.sign(trg_affine[0][mx])
+            new_affine[1][my] = rty*numpy.sign(trg_affine[1][my])
+            new_affine[2][mz] = rtz*numpy.sign(trg_affine[2][mz])
+            if (numpy.sign(trg_affine[0][mx])<0):
+                new_affine[0][3] = rtx*ntx/2.0
+            else:
+                new_affine[0][3] = -rtx*ntx/2.0
 
-        target = load_volume(target_images[idx])
+            if (numpy.sign(trg_affine[1][my])<0):
+                new_affine[1][3] = rty*nty/2.0
+            else:
+                new_affine[1][3] = -rty*nty/2.0
+
+            if (numpy.sign(trg_affine[2][mz])<0):
+                new_affine[2][3] = rtz*ntz/2.0
+            else:
+                new_affine[2][3] = -rtz*ntz/2.0
+        new_affine[3][3] = 1.0
+
+        trg_img = nibabel.Nifti1Image(target.get_fdata(), new_affine, target.header)
+        trg_img.update_header()
+        trg_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_trgimg'+str(idx)))
+        save_volume(trg_img_file, trg_img)
+        target = load_volume(trg_img_file)
         trg_affine = target.affine
         trg_header = target.header
-        ntx = target.header.get_data_shape()[X]
-        nty = target.header.get_data_shape()[Y]
-        ntz = 1
-        rtx = target.header.get_zooms()[X]
-        rty = target.header.get_zooms()[Y]
-        rtz = 1.0
-
-        orig_trg_aff = target.affine
-        orig_trg_hdr = target.header
-
-        # in case the affine transformations are not to be trusted: make them equal
-        if ignore_affine or ignore_orient or ignore_res:
-            mx = numpy.argmax(numpy.abs(src_affine[0][0:3]))
-            my = numpy.argmax(numpy.abs(src_affine[1][0:3]))
-            mz = numpy.argmax(numpy.abs(src_affine[2][0:3]))
-            new_affine = numpy.zeros((4,4))
-            if ignore_res:
-                new_affine[0][:] = src_affine[0][:]/rsx
-                new_affine[1][:] = src_affine[1][:]/rsy
-                new_affine[2][:] = src_affine[2][:]/rsz
-                rsx = 1.0
-                rsy = 1.0
-                rsz = 1.0
-
-            if ignore_orient:
-                new_affine[0][0] = rsx
-                new_affine[1][1] = rsy
-                new_affine[2][2] = rsz
-                new_affine[0][3] = -rsx*nsx/2.0
-                new_affine[1][3] = -rsy*nsy/2.0
-                new_affine[2][3] = -rsz*nsz/2.0
-            elif ignore_affine:
-                new_affine[0][mx] = rsx*numpy.sign(src_affine[0][mx])
-                new_affine[1][my] = rsy*numpy.sign(src_affine[1][my])
-                new_affine[2][mz] = rsz*numpy.sign(src_affine[2][mz])
-                if (numpy.sign(src_affine[0][mx])<0):
-                    new_affine[0][3] = rsx*nsx/2.0
-                else:
-                    new_affine[0][3] = -rsx*nsx/2.0
-
-                if (numpy.sign(src_affine[1][my])<0):
-                    new_affine[1][3] = rsy*nsy/2.0
-                else:
-                    new_affine[1][3] = -rsy*nsy/2.0
-
-                if (numpy.sign(src_affine[2][mz])<0):
-                    new_affine[2][3] = rsz*nsz/2.0
-                else:
-                    new_affine[2][3] = -rsz*nsz/2.0
-            new_affine[3][3] = 1.0
-
-            src_img = nibabel.Nifti1Image(source.get_fdata(), new_affine, source.header)
-            src_img.update_header()
-            src_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
-                                                            rootfile=source_images[0],
-                                                            suffix='tmp_srcimg'+str(idx)))
-            save_volume(src_img_file, src_img)
-            source = load_volume(src_img_file)
-            src_affine = source.affine
-            src_header = source.header
-            src_img_files.append(src_img_file)
-
-            # create generic affine aligned with the orientation for the target
-            mx = numpy.argmax(numpy.abs(trg_affine[0][0:3]))
-            my = numpy.argmax(numpy.abs(trg_affine[1][0:3]))
-            mz = numpy.argmax(numpy.abs(trg_affine[2][0:3]))
-            new_affine = numpy.zeros((4,4))
-            if ignore_res:
-                new_affine[0][:] = trg_affine[0][:]/rtx
-                new_affine[1][:] = trg_affine[1][:]/rty
-                new_affine[2][:] = trg_affine[2][:]/rtz
-                rtx = 1.0
-                rty = 1.0
-                rtz = 1.0
-
-            if ignore_orient:
-                new_affine[0][0] = rtx
-                new_affine[1][1] = rty
-                new_affine[2][2] = rtz
-                new_affine[0][3] = -rtx*ntx/2.0
-                new_affine[1][3] = -rty*nty/2.0
-                new_affine[2][3] = -rtz*ntz/2.0
-            elif ignore_affine:
-                new_affine[0][mx] = rtx*numpy.sign(trg_affine[0][mx])
-                new_affine[1][my] = rty*numpy.sign(trg_affine[1][my])
-                new_affine[2][mz] = rtz*numpy.sign(trg_affine[2][mz])
-                if (numpy.sign(trg_affine[0][mx])<0):
-                    new_affine[0][3] = rtx*ntx/2.0
-                else:
-                    new_affine[0][3] = -rtx*ntx/2.0
-
-                if (numpy.sign(trg_affine[1][my])<0):
-                    new_affine[1][3] = rty*nty/2.0
-                else:
-                    new_affine[1][3] = -rty*nty/2.0
-
-                if (numpy.sign(trg_affine[2][mz])<0):
-                    new_affine[2][3] = rtz*ntz/2.0
-                else:
-                    new_affine[2][3] = -rtz*ntz/2.0
-            new_affine[3][3] = 1.0
-
-            trg_img = nibabel.Nifti1Image(target.get_fdata(), new_affine, target.header)
-            trg_img.update_header()
-            trg_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
-                                                            rootfile=source_images[0],
-                                                            suffix='tmp_trgimg'+str(idx)))
-            save_volume(trg_img_file, trg_img)
-            target = load_volume(trg_img_file)
-            trg_affine = target.affine
-            trg_header = target.header
-            trg_img_files.append(trg_img_file)
-
-        sources.append(source)
-        targets.append(target)
-
+        
     # in case of inconsistent headers, use the first as reference
-    source = sources[0]
-    target = targets[0]
+    sources = []
+    targets = []
+    for idx,img in enumerate(source_images):
+        img = load_volume(source_images[0])
+        img = nibabel.Nifti1Image(img.get_fdata(),source.affine,source.header)
+        sources.append(img)
+        
+    for idx,img in enumerate(target_images):
+        img = load_volume(target_images[0])
+        img = nibabel.Nifti1Image(img.get_fdata(),target.affine,target.header)
+        targets.append(img)
 
     # build coordinate mapping matrices and save them to disk
     src_coordX = numpy.zeros((nsx,nsy))
@@ -985,10 +984,8 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     if os.path.exists(trg_mapX_trans): os.remove(trg_mapX_trans)
     if os.path.exists(trg_mapY_trans): os.remove(trg_mapY_trans)
     if ignore_affine or ignore_orient or ignore_res:
-        for src_img_file in src_img_files:
-            if os.path.exists(src_img_file): os.remove(src_img_file)
-        for trg_img_file in trg_img_files:
-            if os.path.exists(trg_img_file): os.remove(trg_img_file)
+        if os.path.exists(src_img_file): os.remove(src_img_file)
+        if os.path.exists(trg_img_file): os.remove(trg_img_file)
 
     for name in forward:
         if os.path.exists(name): os.remove(name)
@@ -1183,131 +1180,134 @@ def embedded_antspy_multi(source_images, target_images,
                       'inverse': inverse_mapping_file}
                 return output
 
-    # load and get dimensions and resolution from input images
+    # load and get dimensions and resolution from first input images
+    source = load_volume(source_images[0])
+    src_affine = source.affine
+    src_header = source.header
+    nsx = source.header.get_data_shape()[X]
+    nsy = source.header.get_data_shape()[Y]
+    nsz = source.header.get_data_shape()[Z]
+    rsx = source.header.get_zooms()[X]
+    rsy = source.header.get_zooms()[Y]
+    rsz = source.header.get_zooms()[Z]
+
+    orig_src_aff = source.affine
+    orig_src_hdr = source.header
+
+    target = load_volume(target_images[0])
+    trg_affine = target.affine
+    trg_header = target.header
+    ntx = target.header.get_data_shape()[X]
+    nty = target.header.get_data_shape()[Y]
+    ntz = target.header.get_data_shape()[Z]
+    rtx = target.header.get_zooms()[X]
+    rty = target.header.get_zooms()[Y]
+    rtz = target.header.get_zooms()[Z]
+
+    orig_trg_aff = target.affine
+    orig_trg_hdr = target.header
+
+    # in case the affine transformations are not to be trusted: make them equal
+    if ignore_affine or ignore_header:
+        # create generic affine aligned with the orientation for the source
+        new_affine = numpy.zeros((4,4))
+        if ignore_header:
+            new_affine[0][0] = rsx
+            new_affine[1][1] = rsy
+            new_affine[2][2] = rsz
+            new_affine[0][3] = -rsx*nsx/2.0
+            new_affine[1][3] = -rsy*nsy/2.0
+            new_affine[2][3] = -rsz*nsz/2.0
+        else:
+            mx = numpy.argmax(numpy.abs([src_affine[0][0],src_affine[1][0],src_affine[2][0]]))
+            my = numpy.argmax(numpy.abs([src_affine[0][1],src_affine[1][1],src_affine[2][1]]))
+            mz = numpy.argmax(numpy.abs([src_affine[0][2],src_affine[1][2],src_affine[2][2]]))
+            new_affine[mx][0] = rsx*numpy.sign(src_affine[mx][0])
+            new_affine[my][1] = rsy*numpy.sign(src_affine[my][1])
+            new_affine[mz][2] = rsz*numpy.sign(src_affine[mz][2])
+            if (numpy.sign(src_affine[mx][0])<0):
+                new_affine[mx][3] = rsx*nsx/2.0
+            else:
+                new_affine[mx][3] = -rsx*nsx/2.0
+
+            if (numpy.sign(src_affine[my][1])<0):
+                new_affine[my][3] = rsy*nsy/2.0
+            else:
+                new_affine[my][3] = -rsy*nsy/2.0
+
+            if (numpy.sign(src_affine[mz][2])<0):
+                new_affine[mz][3] = rsz*nsz/2.0
+            else:
+                new_affine[mz][3] = -rsz*nsz/2.0
+        new_affine[3][3] = 1.0
+
+        src_img = nibabel.Nifti1Image(source.get_fdata(), new_affine, source.header)
+        src_img.update_header()
+        src_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_srcimg'+str(idx)))
+        save_volume(src_img_file, src_img)
+        source = load_volume(src_img_file)
+        src_affine = source.affine
+        src_header = source.header
+
+        # create generic affine aligned with the orientation for the target
+        new_affine = numpy.zeros((4,4))
+        if ignore_header:
+            new_affine[0][0] = rtx
+            new_affine[1][1] = rty
+            new_affine[2][2] = rtz
+            new_affine[0][3] = -rtx*ntx/2.0
+            new_affine[1][3] = -rty*nty/2.0
+            new_affine[2][3] = -rtz*ntz/2.0
+        else:
+            mx = numpy.argmax(numpy.abs([trg_affine[0][0],trg_affine[1][0],trg_affine[2][0]]))
+            my = numpy.argmax(numpy.abs([trg_affine[0][1],trg_affine[1][1],trg_affine[2][1]]))
+            mz = numpy.argmax(numpy.abs([trg_affine[0][2],trg_affine[1][2],trg_affine[2][2]]))
+            #print('mx: '+str(mx)+', my: '+str(my)+', mz: '+str(mz))
+            #print('rx: '+str(rtx)+', ry: '+str(rty)+', rz: '+str(rtz))
+            new_affine[mx][0] = rtx*numpy.sign(trg_affine[mx][0])
+            new_affine[my][1] = rty*numpy.sign(trg_affine[my][1])
+            new_affine[mz][2] = rtz*numpy.sign(trg_affine[mz][2])
+            if (numpy.sign(trg_affine[mx][0])<0):
+                new_affine[mx][3] = rtx*ntx/2.0
+            else:
+                new_affine[mx][3] = -rtx*ntx/2.0
+
+            if (numpy.sign(trg_affine[my][1])<0):
+                new_affine[my][3] = rty*nty/2.0
+            else:
+                new_affine[my][3] = -rty*nty/2.0
+
+            if (numpy.sign(trg_affine[mz][2])<0):
+                new_affine[mz][3] = rtz*ntz/2.0
+            else:
+                new_affine[mz][3] = -rtz*ntz/2.0
+        new_affine[3][3] = 1.0
+        #print("\nbefore: "+str(trg_affine))
+        #print("\nafter: "+str(new_affine))
+        trg_img = nibabel.Nifti1Image(target.get_fdata(), new_affine, target.header)
+        trg_img.update_header()
+        trg_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_trgimg'+str(idx)))
+        save_volume(trg_img_file, trg_img)
+        target = load_volume(trg_img_file)
+        trg_affine = target.affine
+        trg_header = target.header
+
+    # in case of inconsisten headers, all inputs get the one from the first image
     sources = []
     targets = []
     for idx,img in enumerate(source_images):
-        source = load_volume(source_images[idx])
-        src_affine = source.affine
-        src_header = source.header
-        nsx = source.header.get_data_shape()[X]
-        nsy = source.header.get_data_shape()[Y]
-        nsz = source.header.get_data_shape()[Z]
-        rsx = source.header.get_zooms()[X]
-        rsy = source.header.get_zooms()[Y]
-        rsz = source.header.get_zooms()[Z]
-
-        orig_src_aff = source.affine
-        orig_src_hdr = source.header
-
-        target = load_volume(target_images[idx])
-        trg_affine = target.affine
-        trg_header = target.header
-        ntx = target.header.get_data_shape()[X]
-        nty = target.header.get_data_shape()[Y]
-        ntz = target.header.get_data_shape()[Z]
-        rtx = target.header.get_zooms()[X]
-        rty = target.header.get_zooms()[Y]
-        rtz = target.header.get_zooms()[Z]
-
-        orig_trg_aff = target.affine
-        orig_trg_hdr = target.header
-
-        # in case the affine transformations are not to be trusted: make them equal
-        if ignore_affine or ignore_header:
-            # create generic affine aligned with the orientation for the source
-            new_affine = numpy.zeros((4,4))
-            if ignore_header:
-                new_affine[0][0] = rsx
-                new_affine[1][1] = rsy
-                new_affine[2][2] = rsz
-                new_affine[0][3] = -rsx*nsx/2.0
-                new_affine[1][3] = -rsy*nsy/2.0
-                new_affine[2][3] = -rsz*nsz/2.0
-            else:
-                mx = numpy.argmax(numpy.abs([src_affine[0][0],src_affine[1][0],src_affine[2][0]]))
-                my = numpy.argmax(numpy.abs([src_affine[0][1],src_affine[1][1],src_affine[2][1]]))
-                mz = numpy.argmax(numpy.abs([src_affine[0][2],src_affine[1][2],src_affine[2][2]]))
-                new_affine[mx][0] = rsx*numpy.sign(src_affine[mx][0])
-                new_affine[my][1] = rsy*numpy.sign(src_affine[my][1])
-                new_affine[mz][2] = rsz*numpy.sign(src_affine[mz][2])
-                if (numpy.sign(src_affine[mx][0])<0):
-                    new_affine[mx][3] = rsx*nsx/2.0
-                else:
-                    new_affine[mx][3] = -rsx*nsx/2.0
-
-                if (numpy.sign(src_affine[my][1])<0):
-                    new_affine[my][3] = rsy*nsy/2.0
-                else:
-                    new_affine[my][3] = -rsy*nsy/2.0
-
-                if (numpy.sign(src_affine[mz][2])<0):
-                    new_affine[mz][3] = rsz*nsz/2.0
-                else:
-                    new_affine[mz][3] = -rsz*nsz/2.0
-            new_affine[3][3] = 1.0
-
-            src_img = nibabel.Nifti1Image(source.get_fdata(), new_affine, source.header)
-            src_img.update_header()
-            src_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
-                                                            rootfile=source_images[0],
-                                                            suffix='tmp_srcimg'+str(idx)))
-            save_volume(src_img_file, src_img)
-            source = load_volume(src_img_file)
-            src_affine = source.affine
-            src_header = source.header
-
-            # create generic affine aligned with the orientation for the target
-            new_affine = numpy.zeros((4,4))
-            if ignore_header:
-                new_affine[0][0] = rtx
-                new_affine[1][1] = rty
-                new_affine[2][2] = rtz
-                new_affine[0][3] = -rtx*ntx/2.0
-                new_affine[1][3] = -rty*nty/2.0
-                new_affine[2][3] = -rtz*ntz/2.0
-            else:
-                mx = numpy.argmax(numpy.abs([trg_affine[0][0],trg_affine[1][0],trg_affine[2][0]]))
-                my = numpy.argmax(numpy.abs([trg_affine[0][1],trg_affine[1][1],trg_affine[2][1]]))
-                mz = numpy.argmax(numpy.abs([trg_affine[0][2],trg_affine[1][2],trg_affine[2][2]]))
-                #print('mx: '+str(mx)+', my: '+str(my)+', mz: '+str(mz))
-                #print('rx: '+str(rtx)+', ry: '+str(rty)+', rz: '+str(rtz))
-                new_affine[mx][0] = rtx*numpy.sign(trg_affine[mx][0])
-                new_affine[my][1] = rty*numpy.sign(trg_affine[my][1])
-                new_affine[mz][2] = rtz*numpy.sign(trg_affine[mz][2])
-                if (numpy.sign(trg_affine[mx][0])<0):
-                    new_affine[mx][3] = rtx*ntx/2.0
-                else:
-                    new_affine[mx][3] = -rtx*ntx/2.0
-
-                if (numpy.sign(trg_affine[my][1])<0):
-                    new_affine[my][3] = rty*nty/2.0
-                else:
-                    new_affine[my][3] = -rty*nty/2.0
-
-                if (numpy.sign(trg_affine[mz][2])<0):
-                    new_affine[mz][3] = rtz*ntz/2.0
-                else:
-                    new_affine[mz][3] = -rtz*ntz/2.0
-            new_affine[3][3] = 1.0
-            #print("\nbefore: "+str(trg_affine))
-            #print("\nafter: "+str(new_affine))
-            trg_img = nibabel.Nifti1Image(target.get_fdata(), new_affine, target.header)
-            trg_img.update_header()
-            trg_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
-                                                            rootfile=source_images[0],
-                                                            suffix='tmp_trgimg'+str(idx)))
-            save_volume(trg_img_file, trg_img)
-            target = load_volume(trg_img_file)
-            trg_affine = target.affine
-            trg_header = target.header
-            
-        sources.append(source)
-        targets.append(target)
-
-    # in case of inconsistent headers, use the first as reference
-    source = sources[0]
-    target = targets[0]
+        img = load_volume(source_images[0])
+        img = nibabel.Nifti1Image(img.get_fdata(),source.affine,source.header)
+        sources.append(img)
+        
+    for idx,img in enumerate(target_images):
+        img = load_volume(target_images[0])
+        img = nibabel.Nifti1Image(img.get_fdata(),target.affine,target.header)
+        targets.append(img)
 
     # build coordinate mapping matrices and save them to disk
     src_coordX = numpy.zeros((nsx,nsy,nsz))
