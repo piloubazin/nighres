@@ -536,15 +536,29 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     # in case of inconsistent headers, use the first as reference
     sources = []
     targets = []
-    for idx,img in enumerate(source_images):
-        img = load_volume(source_images[idx])
-        img = nibabel.Nifti1Image(img.get_fdata(),source.affine,source.header)
-        sources.append(img)
+    src_img_files = []
+    trg_img_files = []
+    for idx,src_img in enumerate(source_images):
+        src_img = load_volume(source_images[idx])
+        src_img = nibabel.Nifti1Image(src_img.get_fdata(),source.affine,source.header)
+        src_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_srcimg'+str(idx)))
+        save_volume(src_img_file, src_img)
+        src_img = load_volume(src_img_file)
+        sources.append(src_img)
+        src_img_files.append(src_img_file)
         
-    for idx,img in enumerate(target_images):
-        img = load_volume(target_images[idx])
-        img = nibabel.Nifti1Image(img.get_fdata(),target.affine,target.header)
-        targets.append(img)
+    for idx,trg_img in enumerate(target_images):
+        trg_img = load_volume(target_images[idx])
+        trg_img = nibabel.Nifti1Image(trg_img.get_fdata(),target.affine,target.header)
+        trg_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_trgimg'+str(idx)))
+        save_volume(trg_img_file, trg_img)
+        trg_img = load_volume(trg_img_file)
+        targets.append(trg_img)
+        trg_img_files.append(trg_ing_file)
 
     # build coordinate mapping matrices and save them to disk
     src_coordX = numpy.zeros((nsx,nsy))
@@ -634,7 +648,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
             weights.append(image_weights[idx]/weight_sum)
     else:        
         for idx,img in enumerate(sources):
-            weights.append(1.0/len(srcfiles))
+            weights.append(1.0/len(sources))
 
     # figure out the number of scales, going with a factor of two
     n_scales = math.ceil(math.log(scaling_factor)/math.log(2.0))
@@ -983,8 +997,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     if os.path.exists(src_mapY_trans): os.remove(src_mapY_trans)
     if os.path.exists(trg_mapX_trans): os.remove(trg_mapX_trans)
     if os.path.exists(trg_mapY_trans): os.remove(trg_mapY_trans)
-    if ignore_affine or ignore_orient or ignore_res:
+    for src_img_file in src_img_files:
         if os.path.exists(src_img_file): os.remove(src_img_file)
+    for trg_img_file in trg_img_files:
         if os.path.exists(trg_img_file): os.remove(trg_img_file)
 
     for name in forward:
@@ -1296,18 +1311,32 @@ def embedded_antspy_multi(source_images, target_images,
         trg_affine = target.affine
         trg_header = target.header
 
-    # in case of inconsisten headers, all inputs get the one from the first image
+    # in case of inconsistent headers, use the first as reference
     sources = []
     targets = []
-    for idx,img in enumerate(source_images):
-        img = load_volume(source_images[idx])
-        img = nibabel.Nifti1Image(img.get_fdata(),source.affine,source.header)
-        sources.append(img)
+    src_img_files = []
+    trg_img_files = []
+    for idx,src_img in enumerate(source_images):
+        src_img = load_volume(source_images[idx])
+        src_img = nibabel.Nifti1Image(src_img.get_fdata(),source.affine,source.header)
+        src_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_srcimg'+str(idx)))
+        save_volume(src_img_file, src_img)
+        src_img = load_volume(src_img_file)
+        sources.append(src_img)
+        src_img_files.append(src_img_file)
         
-    for idx,img in enumerate(target_images):
-        img = load_volume(target_images[idx])
-        img = nibabel.Nifti1Image(img.get_fdata(),target.affine,target.header)
-        targets.append(img)
+    for idx,trg_img in enumerate(target_images):
+        trg_img = load_volume(target_images[idx])
+        trg_img = nibabel.Nifti1Image(trg_img.get_fdata(),target.affine,target.header)
+        trg_img_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
+                                                        rootfile=source_images[0],
+                                                        suffix='tmp_trgimg'+str(idx)))
+        save_volume(trg_img_file, trg_img)
+        trg_img = load_volume(trg_img_file)
+        targets.append(trg_img)
+        trg_img_files.append(trg_ing_file)
 
     # build coordinate mapping matrices and save them to disk
     src_coordX = numpy.zeros((nsx,nsy,nsz))
@@ -1857,8 +1886,9 @@ def embedded_antspy_multi(source_images, target_images,
     if os.path.exists(trg_mapX_trans): os.remove(trg_mapX_trans)
     if os.path.exists(trg_mapY_trans): os.remove(trg_mapY_trans)
     if os.path.exists(trg_mapZ_trans): os.remove(trg_mapZ_trans)
-    if ignore_affine or ignore_header:
+    for src_img_file in src_img_files:
         if os.path.exists(src_img_file): os.remove(src_img_file)
+    for trg_img_file in trg_img_files:
         if os.path.exists(trg_img_file): os.remove(trg_img_file)
 
     for name in forward:
