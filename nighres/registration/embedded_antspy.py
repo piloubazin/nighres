@@ -543,6 +543,10 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         sources.append(source)
         targets.append(target)
 
+    # in case of inconsistent headers, use the first as reference
+    source = sources[0]
+    target = targets[0]
+
     # build coordinate mapping matrices and save them to disk
     src_coordX = numpy.zeros((nsx,nsy))
     src_coordY = numpy.zeros((nsx,nsy))
@@ -1300,6 +1304,10 @@ def embedded_antspy_multi(source_images, target_images,
             
         sources.append(source)
         targets.append(target)
+
+    # in case of inconsistent headers, use the first as reference
+    source = sources[0]
+    target = targets[0]
 
     # build coordinate mapping matrices and save them to disk
     src_coordX = numpy.zeros((nsx,nsy,nsz))
