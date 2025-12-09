@@ -31,7 +31,7 @@ def rescale_mapping(source_image=None,
     ----------
     source_image: niimg
         Image to rescale
-    scaling_factor: float
+    scaling_factor: float or tuple
         Factor to use for rescaling
     save_data: bool
         Save output data to file (default is False)
@@ -79,6 +79,16 @@ def rescale_mapping(source_image=None,
             output = {'mapping': mapping_file, 'inverse': inverse_file}
             return output
 
+    # set the scales
+    if isinstance(scaling_factor, tuple) and len(scaling_factor)==3:
+        scalingX = scaling_factor[0]
+        scalingY = scaling_factor[1]
+        scalingZ = scaling_factor[2]
+    else:
+        scalingX = scaling_factor
+        scalingY = scaling_factor
+        scalingZ = scaling_factor
+        
 
     # load and get dimensions and resolution from input images
     source = load_volume(source_image)
@@ -92,12 +102,12 @@ def rescale_mapping(source_image=None,
     ry = source.header.get_zooms()[Y]
     rz = source.header.get_zooms()[Z]
     
-    nsx = math.ceil(nx*scaling_factor)
-    nsy = math.ceil(ny*scaling_factor)
-    nsz = math.ceil(nz*scaling_factor)
-    rsx = rx/scaling_factor
-    rsy = ry/scaling_factor
-    rsz = rz/scaling_factor
+    nsx = math.ceil(nx*scalingX)
+    nsy = math.ceil(ny*scalingY)
+    nsz = math.ceil(nz*scalingZ)
+    rsx = rx/scalingX
+    rsy = ry/scalingY
+    rsz = rz/scalingZ
     if len(source.header.get_zooms())==3:
         trgheader.set_zooms((rsx,rsy,rsz))
     elif len(source.header.get_zooms())==4:
@@ -108,17 +118,17 @@ def rescale_mapping(source_image=None,
     for x in range(nsx):
         for y in range(nsy):
             for z in range(nsz):
-                mapping[x,y,z,X] = x/scaling_factor
-                mapping[x,y,z,Y] = y/scaling_factor
-                mapping[x,y,z,Z] = z/scaling_factor
+                mapping[x,y,z,X] = x/scalingX
+                mapping[x,y,z,Y] = y/scalingY
+                mapping[x,y,z,Z] = z/scalingZ
                 
     inverse = numpy.zeros((nx,ny,nz,3))
     for x in range(nx):
         for y in range(ny):
             for z in range(nz):
-                inverse[x,y,z,X] = x*scaling_factor
-                inverse[x,y,z,Y] = y*scaling_factor
-                inverse[x,y,z,Z] = z*scaling_factor
+                inverse[x,y,z,X] = x*scalingX
+                inverse[x,y,z,Y] = y*scalingY
+                inverse[x,y,z,Z] = z*scalingZ
 
     mapping_img = nibabel.Nifti1Image(mapping, affine, trgheader)
     inverse_img = nibabel.Nifti1Image(inverse, affine, srcheader)
@@ -132,6 +142,7 @@ def rescale_mapping(source_image=None,
 
     return outputs
 
+
 def rescale_mapping_2d(source_image=None,
             scaling_factor=1.0,
             save_data=False, overwrite=False, output_dir=None,
@@ -144,7 +155,7 @@ def rescale_mapping_2d(source_image=None,
     ----------
     source_image: niimg
         Image to rescale
-    scaling_factor: float
+    scaling_factor: float or tuple
         Factor to use for rescaling
     save_data: bool
         Save output data to file (default is False)
@@ -192,6 +203,13 @@ def rescale_mapping_2d(source_image=None,
             output = {'mapping': mapping_file, 'inverse': inverse_file}
             return output
 
+    # set the scales
+    if isinstance(scaling_factor, tuple) and len(scaling_factor)==2:
+        scalingX = scaling_factor[0]
+        scalingY = scaling_factor[1]
+    else:
+        scalingX = scaling_factor
+        scalingY = scaling_factor
 
     # load and get dimensions and resolution from input images
     source = load_volume(source_image)
@@ -203,8 +221,8 @@ def rescale_mapping_2d(source_image=None,
     rx = source.header.get_zooms()[X]
     ry = source.header.get_zooms()[Y]
     
-    nsx = math.ceil(nx*scaling_factor)
-    nsy = math.ceil(ny*scaling_factor)
+    nsx = math.ceil(nx*scalingX)
+    nsy = math.ceil(ny*scalingY)
     rsx = rx/scaling_factor
     rsy = ry/scaling_factor
     if len(source.header.get_zooms())==2:
@@ -216,14 +234,14 @@ def rescale_mapping_2d(source_image=None,
     mapping = numpy.zeros((nsx,nsy,2))
     for x in range(nsx):
         for y in range(nsy):
-                mapping[x,y,X] = x/scaling_factor
-                mapping[x,y,Y] = y/scaling_factor
+                mapping[x,y,X] = x/scalingX
+                mapping[x,y,Y] = y/scalingY
                 
     inverse = numpy.zeros((nx,ny,2))
     for x in range(nx):
         for y in range(ny):
-            inverse[x,y,X] = x*scaling_factor
-            inverse[x,y,Y] = y*scaling_factor
+            inverse[x,y,X] = x*scalingX
+            inverse[x,y,Y] = y*scalingY
 
     mapping_img = nibabel.Nifti1Image(mapping, affine, trgheader)
     inverse_img = nibabel.Nifti1Image(inverse, affine, srcheader)
