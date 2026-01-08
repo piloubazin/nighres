@@ -424,7 +424,8 @@ def massp_atlasing(subjects, structures, contrasts,
     except ValueError:
         pass
     # create instance
-    massp = nighresjava.ConditionalShapeSegmentationSlabs()
+    #massp = nighresjava.ConditionalShapeSegmentationSlabs()
+    massp = nighresjava.ConditionalShapeSegmentationFaster()
 
     # set parameters
     massp.setNumberOfSubjectsObjectsBgAndContrasts(subjects,structures,1,contrasts)

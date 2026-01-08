@@ -132,6 +132,7 @@ def rescale_mapping(source_image=None,
 
     return outputs
 
+
 def rescale_mapping_2d(source_image=None,
             scaling_factor=1.0,
             save_data=False, overwrite=False, output_dir=None,
