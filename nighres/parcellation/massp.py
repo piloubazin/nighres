@@ -320,7 +320,7 @@ def massp(target_images, structures=31,
 
 def massp_atlasing(subjects, structures, contrasts, 
                       levelset_images=None, skeleton_images=None, 
-                      contrast_images=None, 
+                      contrast_images=None, smoothing=1.0,
                       save_data=False, overwrite=False, output_dir=None,
                       file_name=None):
     """ MASSP Atlasing
@@ -341,6 +341,9 @@ def massp_atlasing(subjects, structures, contrasts,
         Atlas shape skeletons indexed by (subjects,structures)
     contrast_images: [niimg]
         Atlas images to use in the parcellation, indexed by (subjects, contrasts)
+    smoothing: float
+        Standard deviation in number of bins used in histogram smoothing 
+        (default is 1)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -430,6 +433,7 @@ def massp_atlasing(subjects, structures, contrasts,
     # set parameters
     massp.setNumberOfSubjectsObjectsBgAndContrasts(subjects,structures,1,contrasts)
     massp.setOptions(True, False, False, False, True)
+    massp.setHistogramSmoothing(smoothing)
      
     # load target image for parameters
     # load a first image for dim, res
