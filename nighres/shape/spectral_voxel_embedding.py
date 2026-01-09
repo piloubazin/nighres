@@ -766,6 +766,8 @@ def spectral_voxel_mapping(image,
         return
 
     # Collect output
+    embeddims = tuple(algorithm.getEmbeddingDims())
+    
     mapped_data = np.reshape(np.array(algorithm.getEmbeddedImage(),
                                dtype=np.float32), newshape=embeddims, order='F')
     
