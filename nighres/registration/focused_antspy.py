@@ -271,7 +271,7 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
     
         focus = probability_to_levelset(img)['result'].get_fdata()
         maxfocus = -2.0*numpy.min(focus)
-        print('\nthickness: '+str(maxfocus))
+        print('\nthickness: '+str(maxfocus)+' -> max range: '+str(label_distance*maxfocus))
         
         mask = 1.0 - focus/(label_distance*maxfocus)
         mask[mask>1] = 1.0
