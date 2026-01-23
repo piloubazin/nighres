@@ -280,7 +280,8 @@ def massp(target_images, structures=31,
         massp.collapseToJointMaps()
         massp.precomputeStoppingStatistics(3.0)
         massp.topologyBoundaryDefinition("wcs", topology_lut_dir)
-        massp.conditionalPrecomputedDirectVolumeGrowth(3.0)
+        #massp.conditionalPrecomputedDirectVolumeGrowth(3.0)
+        massp.conditionalPrecomputedOrderedVolumeGrowth(3.0)
         massp.collapseSpatialPriorMaps()
 
     except:
