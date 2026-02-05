@@ -78,6 +78,7 @@ def levelset_thickness(input_image,
             and os.path.isfile(thickness_file) \
             and os.path.isfile(axis_file) \
             and os.path.isfile(dist_file) :
+                print("skip computation (use existing results)")
                 output = {'thickness': thickness_file,
                           'axis':axis_file,
                           'dist':dist_file}
