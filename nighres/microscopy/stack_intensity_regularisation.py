@@ -8,7 +8,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir, _check_available_memory
 
 
-def stack_intensity_regularisation(image, cutoff=50, rmax=95, mask=None,
+def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=None,
                             save_data=False, overwrite=False, output_dir=None,
                             file_name=None):
     """ Stack intensity regularisation
@@ -23,6 +23,8 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, mask=None,
         Range of image differences to keep (default is middle 50%)
     rmax: float, optional 
         Maximum intensity to keep for robustness to outliers (default is 95%)
+    memory: int, optional 
+        Number of neighboring images to use for alignment (default is 1)
     mask: niimg
         Input mask or probability image of the data to use (optional)
     save_data: bool
@@ -97,6 +99,7 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, mask=None,
     # set algorithm parameters
     sir.setVariationRatio(float(cutoff))
     sir.setIntensityRatio(float(rmax))
+    sir.setMemory(int(memory))
     
     # execute the algorithm
     try:
