@@ -512,7 +512,7 @@ def conditional_shape_atlasing(subjects, structures, contrasts,
     # execute first step
     scale = 1.0
     try:
-        scale = cspmax.computeAtlasPriors()
+        scale = cspmax.computeNewVolumeAtlasPriors()
  
     except:
         # if the Java module fails, reraise the error it throws

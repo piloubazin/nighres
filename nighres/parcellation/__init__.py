@@ -1,5 +1,7 @@
 from nighres.parcellation.massp import massp
 from nighres.parcellation.massp import massp_atlasing
+from nighres.parcellation.massp import massp2p1
+from nighres.parcellation.massp import massp2p1_atlasing
 from nighres.parcellation.massp import massp_17structures_label
 from nighres.parcellation.massp import massp_17structures_list
 from nighres.parcellation.massp import massp_2p0_label
