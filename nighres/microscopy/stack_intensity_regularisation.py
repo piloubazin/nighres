@@ -9,6 +9,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=None,
+                            split=0,
                             save_data=False, overwrite=False, output_dir=None,
                             file_name=None):
     """ Stack intensity regularisation
@@ -27,6 +28,8 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=Non
         Number of neighboring images to use for alignment (default is 1)
     mask: niimg
         Input mask or probability image of the data to use (optional)
+    split: int, optional 
+        Number of image subdivisions per dimension if using the local algorithm (default is 0)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -103,7 +106,8 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=Non
     
     # execute the algorithm
     try:
-        sir.execute()
+        if (split>0): sir.executeSubdivide(split)
+        else sir.execute()
 
     except:
         # if the Java module fails, reraise the error it throws
