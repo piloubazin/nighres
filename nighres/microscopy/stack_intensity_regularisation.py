@@ -107,7 +107,7 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=Non
     # execute the algorithm
     try:
         if (split>0): sir.executeSubdivide(split)
-        else sir.execute()
+        else: sir.execute()
 
     except:
         # if the Java module fails, reraise the error it throws
