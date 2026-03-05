@@ -22,8 +22,8 @@ def super_voxels(image, mask=None, scaling=4.0, noise_level=0.1, output_type='av
         Input image
     mask: niimg, optional
         Data mask to specify acceptable seeding regions
-    scaling: float, optional
-        Scaling factor for the new super-voxel grid (default is 4)
+    scaling: float or array, optional
+        Scaling factor for the new super-voxel grid, per dimension (default is 4 for all)
     noise_level: float, optional
         Weighting parameter to balance image intensity and spatial variability
     output_type: string, optional
@@ -125,7 +125,14 @@ def super_voxels(image, mask=None, scaling=4.0, noise_level=0.1, output_type='av
                 (load_volume(mask).get_fdata().flatten('F')).astype(int).tolist()))
     
     # set algorithm parameters
-    supervoxel.setScalingFactor(scaling)
+    if isinstance(scaling, list):
+        supervoxel.setScalingFactorX(scaling[0])
+        supervoxel.setScalingFactorY(scaling[1])
+        supervoxel.setScalingFactorZ(scaling[2])
+    else:
+        supervoxel.setScalingFactorX(scaling)
+        supervoxel.setScalingFactorY(scaling)
+        supervoxel.setScalingFactorZ(scaling)
     supervoxel.setNoiseLevel(noise_level)
     supervoxel.setOutputType(output_type)
     

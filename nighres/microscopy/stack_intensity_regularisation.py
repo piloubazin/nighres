@@ -9,7 +9,7 @@ from ..utils import _output_dir_4saving, _fname_4saving, \
 
 
 def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=None,
-                            split=0,
+                            split=0, shift=0,
                             save_data=False, overwrite=False, output_dir=None,
                             file_name=None):
     """ Stack intensity regularisation
@@ -30,6 +30,8 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=Non
         Input mask or probability image of the data to use (optional)
     split: int, optional 
         Number of image subdivisions per dimension if using the local algorithm (default is 0)
+    shift: int, optional 
+        Pixel shift allowed when looking for neighboring slice intensities (default is 0)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -103,6 +105,7 @@ def stack_intensity_regularisation(image, cutoff=50, rmax=95, memory=1, mask=Non
     sir.setVariationRatio(float(cutoff))
     sir.setIntensityRatio(float(rmax))
     sir.setMemory(int(memory))
+    sir.setShift(int(shift))
     
     # execute the algorithm
     try:
