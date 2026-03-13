@@ -208,4 +208,8 @@ find build/ -type f | grep '.so$' | head -n 1 | xargs -I '{}' -- cp '{}' $nighre
 cd $nighres_local
 
 # finish the installation for the libabry
-uv pip install .
+if hash pip 2>/dev/null; then
+    pip install .
+else
+    uv pip install .
+fi
