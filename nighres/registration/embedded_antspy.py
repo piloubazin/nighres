@@ -561,14 +561,16 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         trg_img_files.append(trg_img_file)
 
     # build coordinate mapping matrices and save them to disk
-    src_coordX = numpy.zeros((nsx,nsy))
-    src_coordY = numpy.zeros((nsx,nsy))
-    trg_coordX = numpy.zeros((ntx,nty))
-    trg_coordY = numpy.zeros((ntx,nty))
-    for x in range(nsx):
-        for y in range(nsy):
-            src_coordX[x,y] = x
-            src_coordY[x,y] = y
+    #src_coordX = numpy.zeros((nsx,nsy))
+    #src_coordY = numpy.zeros((nsx,nsy))
+    #for x in range(nsx):
+    #    for y in range(nsy):
+    #        src_coordX[x,y] = x
+    #        src_coordY[x,y] = y
+    # faster alternative?
+    mapping = numpy.ones((nsx,nsy))
+    src_coordX = numpy.arange(nsx)[:,numpy.newaxis]*mapping
+    src_coordY = numpy.arange(nsy)[numpy.newaxis,:]*mapping
     src_mapX = nibabel.Nifti1Image(src_coordX, source.affine, source.header)
     src_mapX_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_images[0],
@@ -580,10 +582,17 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
                                                         suffix='tmp_srccoordY'))
     save_volume(src_mapY_file, src_mapY)
 
-    for x in range(ntx):
-        for y in range(nty):
-            trg_coordX[x,y] = x
-            trg_coordY[x,y] = y
+    #trg_coordX = numpy.zeros((ntx,nty))
+    #trg_coordY = numpy.zeros((ntx,nty))
+    #for x in range(ntx):
+    #    for y in range(nty):
+    #        trg_coordX[x,y] = x
+    #        trg_coordY[x,y] = y
+    # faster alternative?
+    mapping = numpy.ones((ntx,nty))
+    trg_coordX = numpy.arange(ntx)[:,numpy.newaxis]*mapping
+    trg_coordY = numpy.arange(nty)[numpy.newaxis,:]*mapping
+    
     trg_mapX = nibabel.Nifti1Image(trg_coordX, target.affine, target.header)
     trg_mapX_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_images[0],
@@ -1339,18 +1348,21 @@ def embedded_antspy_multi(source_images, target_images,
         trg_img_files.append(trg_img_file)
 
     # build coordinate mapping matrices and save them to disk
-    src_coordX = numpy.zeros((nsx,nsy,nsz))
-    src_coordY = numpy.zeros((nsx,nsy,nsz))
-    src_coordZ = numpy.zeros((nsx,nsy,nsz))
-    trg_coordX = numpy.zeros((ntx,nty,ntz))
-    trg_coordY = numpy.zeros((ntx,nty,ntz))
-    trg_coordZ = numpy.zeros((ntx,nty,ntz))
-    for x in range(nsx):
-        for y in range(nsy):
-            for z in range(nsz):
-                src_coordX[x,y,z] = x
-                src_coordY[x,y,z] = y
-                src_coordZ[x,y,z] = z
+    #src_coordX = numpy.zeros((nsx,nsy,nsz))
+    #src_coordY = numpy.zeros((nsx,nsy,nsz))
+    #src_coordZ = numpy.zeros((nsx,nsy,nsz))
+    #for x in range(nsx):
+    #    for y in range(nsy):
+    #        for z in range(nsz):
+    #            src_coordX[x,y,z] = x
+    #            src_coordY[x,y,z] = y
+    #            src_coordZ[x,y,z] = z
+    # faster alternative?
+    mapping = numpy.ones((nsx,nsy,nsz))
+    src_coordX = numpy.arange(nsx)[:,numpy.newaxis,numpy.newaxis]*mapping
+    src_coordY = numpy.arange(nsy)[numpy.newaxis,:,numpy.newaxis]*mapping
+    src_coordZ = numpy.arange(nsz)[numpy.newaxis,numpy.newaxis,:]*mapping
+            
     src_mapX = nibabel.Nifti1Image(src_coordX, source.affine, source.header)
     src_mapX_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_images[0],
@@ -1366,12 +1378,21 @@ def embedded_antspy_multi(source_images, target_images,
                                                         rootfile=source_images[0],
                                                         suffix='tmp_srccoordZ'))
     save_volume(src_mapZ_file, src_mapZ)
-    for x in range(ntx):
-        for y in range(nty):
-            for z in range(ntz):
-                trg_coordX[x,y,z] = x
-                trg_coordY[x,y,z] = y
-                trg_coordZ[x,y,z] = z
+    #trg_coordX = numpy.zeros((ntx,nty,ntz))
+    #trg_coordY = numpy.zeros((ntx,nty,ntz))
+    #trg_coordZ = numpy.zeros((ntx,nty,ntz))
+    #    for x in range(ntx):
+    #    for y in range(nty):
+    #        for z in range(ntz):
+    #            trg_coordX[x,y,z] = x
+    #            trg_coordY[x,y,z] = y
+    #            trg_coordZ[x,y,z] = z
+    # faster alternative?
+    mapping = numpy.ones((ntx,nty,ntz))
+    trg_coordX = numpy.arange(ntx)[:,numpy.newaxis,numpy.newaxis]*mapping
+    trg_coordY = numpy.arange(nty)[numpy.newaxis,:,numpy.newaxis]*mapping
+    trg_coordZ = numpy.arange(ntz)[numpy.newaxis,numpy.newaxis,:]*mapping
+
     trg_mapX = nibabel.Nifti1Image(trg_coordX, target.affine, target.header)
     trg_mapX_file = os.path.join(output_dir, _fname_4saving(module=__name__,file_name=file_name,
                                                         rootfile=source_images[0],
