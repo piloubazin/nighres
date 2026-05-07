@@ -155,7 +155,7 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
             and os.path.isfile(propagation_file) :
 
             print("skip computation (use existing results)")
-            output = {'resut': propagation_file}
+            output = {'result': propagation_file}
             return output
 
     # load input image and use it to set dimensions and resolution
