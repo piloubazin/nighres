@@ -330,6 +330,7 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
     step2 = embedded_antspy_multi(transformed_source_files, focused_target_files,
                     run_rigid=run_rigid[-1], rigid_iterations=rigid_iterations[-1], 
                     run_affine=run_affine[-1], affine_iterations=affine_iterations[-1],
+                    run_syn=run_syn[-1],
                     coarse_iterations=coarse_iterations[-1],
                     medium_iterations=medium_iterations[-1], 
                     fine_iterations=fine_iterations[-1],

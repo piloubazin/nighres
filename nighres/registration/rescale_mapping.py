@@ -114,21 +114,36 @@ def rescale_mapping(source_image=None,
         trgheader.set_zooms((rsx,rsy,rsz,source.header.get_zooms()[3]))
 
     # build coordinate mapping matrices and save them to disk
-    mapping = numpy.zeros((nsx,nsy,nsz,3))
-    for x in range(nsx):
-        for y in range(nsy):
-            for z in range(nsz):
-                mapping[x,y,z,X] = x/scalingX
-                mapping[x,y,z,Y] = y/scalingY
-                mapping[x,y,z,Z] = z/scalingZ
-                
-    inverse = numpy.zeros((nx,ny,nz,3))
-    for x in range(nx):
-        for y in range(ny):
-            for z in range(nz):
-                inverse[x,y,z,X] = x*scalingX
-                inverse[x,y,z,Y] = y*scalingY
-                inverse[x,y,z,Z] = z*scalingZ
+    
+    # slow version
+    #mapping = numpy.zeros((nsx,nsy,nsz,3))
+    #for x in range(nsx):
+    #    for y in range(nsy):
+    #        for z in range(nsz):
+    #            mapping[x,y,z,X] = x/scalingX
+    #            mapping[x,y,z,Y] = y/scalingY
+    #            mapping[x,y,z,Z] = z/scalingZ
+    #            
+    #inverse = numpy.zeros((nx,ny,nz,3))
+    #for x in range(nx):
+    #    for y in range(ny):
+    #        for z in range(nz):
+    #            inverse[x,y,z,X] = x*scalingX
+    #            inverse[x,y,z,Y] = y*scalingY
+    #            inverse[x,y,z,Z] = z*scalingZ
+
+    # faster alternative?
+    mapping = numpy.ones((nsx,nsy,nsz))
+    mapx = numpy.arange(nsx)[:,numpy.newaxis,numpy.newaxis]*mapping/scalingX
+    mapy = numpy.arange(nsy)[numpy.newaxis,:,numpy.newaxis]*mapping/scalingY
+    mapz = numpy.arange(nsz)[numpy.newaxis,numpy.newaxis,:]*mapping/scalingZ
+    mapping = numpy.stack([mapx,mapy,mapz],axis=-1)
+
+    inverse = numpy.ones((nx,ny,nz))
+    invx = numpy.arange(nx)[:,numpy.newaxis,numpy.newaxis]*inverse*scalingX
+    invy = numpy.arange(ny)[numpy.newaxis,:,numpy.newaxis]*inverse*scalingY
+    invz = numpy.arange(nz)[numpy.newaxis,numpy.newaxis,:]*inverse*scalingZ
+    inverse = numpy.stack([invx,invy,invz],axis=-1)
 
     mapping_img = nibabel.Nifti1Image(mapping, affine, trgheader)
     inverse_img = nibabel.Nifti1Image(inverse, affine, srcheader)
@@ -231,18 +246,31 @@ def rescale_mapping_2d(source_image=None,
         trgheader.set_zooms((rsx,rsy,source.header.get_zooms()[3]))
 
     # build coordinate mapping matrices and save them to disk
-    mapping = numpy.zeros((nsx,nsy,2))
-    for x in range(nsx):
-        for y in range(nsy):
-                mapping[x,y,X] = x/scalingX
-                mapping[x,y,Y] = y/scalingY
-                
-    inverse = numpy.zeros((nx,ny,2))
-    for x in range(nx):
-        for y in range(ny):
-            inverse[x,y,X] = x*scalingX
-            inverse[x,y,Y] = y*scalingY
+    
+    # slow version
+    #mmapping = numpy.zeros((nsx,nsy,2))
+    #for x in range(nsx):
+    #    for y in range(nsy):
+    #            mapping[x,y,X] = x/scalingX
+    #            mapping[x,y,Y] = y/scalingY
+    #            
+    #inverse = numpy.zeros((nx,ny,2))
+    #for x in range(nx):
+    #    for y in range(ny):
+    #        inverse[x,y,X] = x*scalingX
+    #        inverse[x,y,Y] = y*scalingY
 
+    # faster alternative?
+    mapping = numpy.ones((nsx,nsy))
+    mapx = numpy.arange(nsx)[:,numpy.newaxis]*mapping/scalingX
+    mapy = numpy.arange(nsy)[numpy.newaxis,:]*mapping/scalingY
+    mapping = numpy.stack([mapx,mapy],axis=-1)
+
+    inverse = numpy.ones((nx,ny))
+    invx = numpy.arange(nx)[:,numpy.newaxis,numpy.newaxis]*inverse*scalingX
+    invy = numpy.arange(ny)[numpy.newaxis,:,numpy.newaxis]*inverse*scalingY
+    inverse = numpy.stack([invx,invy],axis=-1)
+    
     mapping_img = nibabel.Nifti1Image(mapping, affine, trgheader)
     inverse_img = nibabel.Nifti1Image(inverse, affine, srcheader)
 
