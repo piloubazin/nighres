@@ -23,6 +23,7 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
                               extend=False,
                               extend_ratio=0.5,
                               diameter=False,
+                              full_output=True,
                               save_data=False, overwrite=False, output_dir=None,
                               file_name=None):
 
@@ -72,6 +73,8 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
         spatial distance only)
     diameter: bool
         Whether or not to estimate diameter and partial volume (default is False)
+    full_output: bool
+        Whether to output only the main result or the full set (default is True)
     save_data: bool
         Save output data to file (default is False)
     overwrite: bool
@@ -88,6 +91,9 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
         Dictionary collecting outputs under the following keys
         (suffix of output files in brackets)
 
+        main:
+        * proba (niimg): propagated probabilistic response (_rrd-proba)
+        full:
         * proba (niimg): propagated probabilistic response (_lfm-proba)
         * lines (niimg): labeling of individual lines (_lfm-lines)
         * length (niimg): estimated line length (_lfm-length)
@@ -152,7 +158,7 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
                                   rootfile=input_image,
                                   suffix='lfm-pv'))
 
-        if overwrite is False \
+        if full_output is True and overwrite is False \
             and os.path.isfile(proba_file) \
             and os.path.isfile(lines_file) \
             and os.path.isfile(length_file) \
@@ -176,6 +182,19 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
                           'length': length_file,
                           'theta': theta_file,
                           'ani': ani_file}
+            return output
+        elif full_output is False and overwrite is False \
+            and os.path.isfile(proba_file) \
+            and (not diameter 
+                or (os.path.isfile(dia_file) and os.path.isfile(pv_file) ) ):
+
+            print("skip computation (use existing results)")
+            if diameter:
+                output = {'proba': proba_file,
+                          'dia': dia_file,
+                          'pv': pv_file}
+            else:
+                output = {'proba': proba_file}
             return output
 
 
@@ -229,7 +248,7 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
 
     # execute Extraction
     try:
-        lfm.execute()
+        lfm.execute(full_output)
 
     except:
         # if the Java module fails, reraise the error it throws
@@ -272,17 +291,18 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
     header['cal_max'] = np.nanmax(proba_data)
     proba_img = nb.Nifti1Image(proba_data, affine, header)
 
-    header['cal_max'] = np.nanmax(lines_data)
-    lines_img = nb.Nifti1Image(lines_data, affine, header)
-
-    header['cal_max'] = np.nanmax(length_data)
-    length_img = nb.Nifti1Image(length_data, affine, header)
-
-    header['cal_max'] = np.nanmax(theta_data)
-    theta_img = nb.Nifti1Image(theta_data, affine, header)
-
-    header['cal_max'] = np.nanmax(ani_data)
-    ani_img = nb.Nifti1Image(ani_data, affine, header)
+    if full_output:
+        header['cal_max'] = np.nanmax(lines_data)
+        lines_img = nb.Nifti1Image(lines_data, affine, header)
+    
+        header['cal_max'] = np.nanmax(length_data)
+        length_img = nb.Nifti1Image(length_data, affine, header)
+    
+        header['cal_max'] = np.nanmax(theta_data)
+        theta_img = nb.Nifti1Image(theta_data, affine, header)
+    
+        header['cal_max'] = np.nanmax(ani_data)
+        ani_img = nb.Nifti1Image(ani_data, affine, header)
     
     if diameter:
         header['cal_max'] = np.nanmax(dia_data)
@@ -294,27 +314,38 @@ def linear_fiber_mapping(input_image, ridge_intensities='bright',
 
     if save_data:
         save_volume(proba_file, proba_img)
-        save_volume(lines_file, lines_img)
-        save_volume(length_file, length_img)
-        save_volume(theta_file, theta_img)
-        save_volume(ani_file, ani_img)
+        if full_output:
+            save_volume(lines_file, lines_img)
+            save_volume(length_file, length_img)
+            save_volume(theta_file, theta_img)
+            save_volume(ani_file, ani_img)
         if diameter:
             save_volume(dia_file, dia_img)
             save_volume(pv_file, pv_img)
             
+        if diameter and full_output:    
             return {'proba': proba_file, 'lines': lines_file,
                 'length': length_file, 'theta': theta_file,
                 'ani': ani_file, 'dia': dia_file, 'pv': pv_file}
-        else:
+        elif full_output:
             return {'proba': proba_file, 'lines': lines_file,
                 'length': length_file, 'theta': theta_file,
                 'ani': ani_file}
+        elif diameter:
+            return {'proba': proba_file, 'dia': dia_file, 'pv': pv_file}
+        else:
+            return {'proba': proba_file}
     else:
-        if diameter:
+        if diameter and full_output:
             return {'proba': proba_img, 'lines': lines_img,
                 'length': length_img, 'theta': theta_img,
                 'ani': ani_img, 'dia': dia_img, 'pv': pv_img}
-        else:
+        elif full_output:
             return {'proba': proba_img, 'lines': lines_img,
                 'length': length_img, 'theta': theta_img,
                 'ani': ani_img}
+        if diameter:
+            return {'proba': proba_img, 'dia': dia_img, 'pv': pv_img}
+        else:
+            return {'proba': proba_img}
+                

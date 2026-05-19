@@ -239,6 +239,7 @@ def focused_antspy(source_images, target_images, source_label=None, target_label
                     run_rigid=run_rigid[0], rigid_iterations=rigid_iterations[0], 
                     run_similarity=run_similarity[0], similarity_iterations=similarity_iterations[0], 
                     run_affine=run_affine[0], affine_iterations=affine_iterations[0],
+                    run_syn=run_syn[0],
                     coarse_iterations=coarse_iterations[0],
                     medium_iterations=medium_iterations[0], 
                     fine_iterations=fine_iterations[0],
