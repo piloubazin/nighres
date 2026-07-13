@@ -631,6 +631,7 @@ def spectral_voxel_mapping(image,
                     dims=3,
                     bins=(100,100,50),
                     smooth=0.0,
+                    dist_interp=False,
                     save_data=False, 
                     overwrite=False, 
                     output_dir=None,
@@ -652,6 +653,8 @@ def spectral_voxel_mapping(image,
         Number of coordinate bins to use, resolution of the output (default is 100)
     smooth: float or (float,)
         Gaussian spread of values across dimensions, in voxels (default is 0)
+    dist_interp: bool, optional
+        Compute a full sized distance-weighted interpolation (default is False)
     save_data: bool, optional
         Save output data to file (default is False)
     output_dir: str, optional
@@ -757,7 +760,11 @@ def spectral_voxel_mapping(image,
 
     # execute
     try:
-        algorithm.execute()
+        if dist_interp:          
+            if (dims==2): algorithm.interpolateInverseDistance2D(3.0, 0.1)
+            elif (dims==3): algorithm.interpolateInverseDistance3D(4.0, 0.1)
+        else:
+            algorithm.execute()
     except:
         # if the Java module fails, reraise the error it throws
         print("\n The underlying Java code did not execute cleanly: ")
