@@ -761,8 +761,8 @@ def spectral_voxel_mapping(image,
     # execute
     try:
         if dist_interp:          
-            if (dims==2): algorithm.interpolateInverseDistance2D(3.0, 0.1)
-            elif (dims==3): algorithm.interpolateInverseDistance3D(4.0, 0.1)
+            if (dims==2): algorithm.interpolateInverseDistance2D(3.0, smoothing[0])
+            elif (dims==3): algorithm.interpolateInverseDistance3D(4.0, smoothing[0])
         else:
             algorithm.execute()
     except:
