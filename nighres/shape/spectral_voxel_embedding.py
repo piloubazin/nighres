@@ -631,6 +631,7 @@ def spectral_voxel_mapping(image,
                     dims=3,
                     bins=(100,100,50),
                     smooth=0.0,
+                    ratio=3.0,
                     dist_interp=False,
                     save_data=False, 
                     overwrite=False, 
@@ -652,7 +653,9 @@ def spectral_voxel_mapping(image,
     bins: int or (int,)
         Number of coordinate bins to use, resolution of the output (default is 100)
     smooth: float or (float,)
-        Gaussian spread of values across dimensions, in voxels (default is 0)
+        Gaussian spread of values across dimensions, in voxels or in representation ratio (default is 0)
+    ratio: float or (float,)
+        Gaussian variance factor in representation in (default is 3.0, higher values decrease smoothing)
     dist_interp: bool, optional
         Compute a full sized distance-weighted interpolation (default is False)
     save_data: bool, optional
@@ -761,8 +764,8 @@ def spectral_voxel_mapping(image,
     # execute
     try:
         if dist_interp:          
-            if (dims==2): algorithm.interpolateInverseDistance2D(3.0, smoothing[0])
-            elif (dims==3): algorithm.interpolateInverseDistance3D(4.0, smoothing[0])
+            if (dims==2): algorithm.interpolateInverseDistance2D(ratio, smoothing[0])
+            elif (dims==3): algorithm.interpolateInverseDistance3D(ratio, smoothing[0])
         else:
             algorithm.execute()
     except:
