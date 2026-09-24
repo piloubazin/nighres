@@ -705,7 +705,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[ 0.001, 0.999 ]')
+        args.append('[ 0.0001, 0.9999 ]')
 
     if run_similarity is True:
         args.append('--transform')
@@ -734,7 +734,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[ 0.001, 0.999 ]')
+        args.append('[ 0.0001, 0.9999 ]')
 
     if run_affine is True:
         args.append('--transform')
@@ -763,7 +763,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[0.001,0.999]')
+        args.append('[0.0001,0.9999]')
 
     if run_syn is True:
         if regularization == 'Low': syn_param = [0.2, 1.0, 0.0]
@@ -797,7 +797,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[0.001,0.999]')
+        args.append('[0.0001,0.9999]')
 
     if run_rigid is False and run_similarity is False and run_affine is False and run_syn is False:
         args.append('--transform')
@@ -816,7 +816,7 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         args.append('--use-histogram-matching')
         args.append('0')
         args.append('--winsorize-image-intensities')
-        args.append('[0.001,0.999]')
+        args.append('[0.0001,0.9999]')
 
     args.append('--write-composite-transform')
     args.append('0')
@@ -1553,7 +1553,7 @@ def embedded_antspy_multi(source_images, target_images,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[ 0.001, 0.999 ]')
+        args.append('[ 0.0001, 0.9999 ]')
 
     if run_similarity is True:
         args.append('--transform')
@@ -1582,7 +1582,7 @@ def embedded_antspy_multi(source_images, target_images,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[ 0.001, 0.999 ]')
+        args.append('[ 0.0001, 0.9999 ]')
 
     if run_affine is True:
         args.append('--transform')
@@ -1611,7 +1611,7 @@ def embedded_antspy_multi(source_images, target_images,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[0.001,0.999]')
+        args.append('[0.0001,0.9999]')
 
     if run_syn is True:
         if regularization == 'Low': syn_param = [0.2, 1.0, 0.0]
@@ -1645,7 +1645,7 @@ def embedded_antspy_multi(source_images, target_images,
         args.append('0')
         
         args.append('--winsorize-image-intensities')
-        args.append('[0.001,0.999]')
+        args.append('[0.0001,0.9999]')
 
     if run_rigid is False and run_similarity is False and run_affine is False and run_syn is False:
         args.append('--transform')
@@ -1664,7 +1664,7 @@ def embedded_antspy_multi(source_images, target_images,
         args.append('--use-histogram-matching')
         args.append('0')
         args.append('--winsorize-image-intensities')
-        args.append('[0.001,0.999]')
+        args.append('[0.0001,0.9999]')
 
     args.append('--write-composite-transform')
     args.append('0')
