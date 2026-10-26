@@ -134,7 +134,7 @@ def oct_multiview_combination(input_images, orient_images,
     
     # reshape output to what nibabel likes
     result_data = np.reshape(np.array(omc.getDirectionImage(),
-                                    dtype=np.float32), newshape=dim4d, order='F')
+                                    dtype=np.float32), shape=dim4d, order='F')
 
 
     # adapt header max for each image so that correct max is displayed

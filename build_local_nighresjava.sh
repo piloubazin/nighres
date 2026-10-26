@@ -20,12 +20,12 @@ nighres_local="/home/pilou/Code/github/nighres"
 
 
 # Check the system has the necessary commands
-hash wget tar javac jar python3 2>/dev/null || fatal "This script needs the following commands available: wget tar javac jar python3"
+hash wget tar javac jar python3 uv 2>/dev/null || fatal "This script needs the following commands available: wget tar javac jar python3 uv"
 
 # Check for setuptools and wheels
-pip_modules=$(python3 -m pip list --format=columns | tr -s ' ' | cut -f 1 -d ' ')
-echo "${pip_modules}" | grep setuptools > /dev/null || fatal 'This script requires setuptools.\nInstall with `pip install --upgrade setuptools`'
-echo "${pip_modules}" | grep wheel > /dev/null || fatal 'This script requires wheel.\nInstall with `pip install --upgrade wheel`'
+pip_modules=$(uv pip list --format=columns | tr -s ' ' | cut -f 1 -d ' ')
+echo "${pip_modules}" | grep setuptools > /dev/null || fatal 'This script requires setuptools.\nInstall with `uv pip install setuptools`'
+echo "${pip_modules}" | grep wheel > /dev/null || fatal 'This script requires wheel.\nInstall with `uv pip install wheel`'
 
 # echo "Before detection: $JAVA_HOME"
 
@@ -36,7 +36,7 @@ export JAVA_HOME=${JAVA_HOME:-"$detected_home"}
 echo "After detection: $JAVA_HOME"
 
 # Check that JCC is installed
-echo "${pip_modules}" | grep JCC > /dev/null || fatal 'This script requires JCC.\nInstall with `apt-get install jcc` or equivalent and `pip install jcc`'
+echo "${pip_modules}" | grep jcc > /dev/null || fatal 'This script requires JCC.\nInstall with `apt-get install jcc` or equivalent and `uv pip install jcc`'
 
 # Attempt to check for python development headers
 # Inspired by https://stackoverflow.com/a/4850603
@@ -208,8 +208,8 @@ find build/ -type f | grep '.so$' | head -n 1 | xargs -I '{}' -- cp '{}' $nighre
 cd $nighres_local
 
 # finish the installation for the libabry
-if hash pip 2>/dev/null; then
-    pip install .
-else
+if hash uv 2>/dev/null; then
     uv pip install .
+else
+    pip install .
 fi

@@ -191,7 +191,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
     # reshape output to what nibabel likes
     gwb_data = np.reshape(np.array(algo.getGwbLevelsetImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -201,7 +201,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
 
     # reshape output to what nibabel likes
     cgb_data = np.reshape(np.array(algo.getCgbLevelsetImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -210,7 +210,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     cgb = nb.Nifti1Image(cgb_data, affine, header)
 
     seg_data = np.reshape(np.array(algo.getSegmentationImage(),
-                                    dtype=np.int32), newshape=dimensions, order='F')
+                                    dtype=np.int32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -219,7 +219,7 @@ def cortical_boundary_adjustment(gwb, cgb, images, gwb_contrasts, cgb_contrasts,
     seg = nb.Nifti1Image(seg_data, affine, header)
 
     proba_data = np.reshape(np.array(algo.getProbaImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects

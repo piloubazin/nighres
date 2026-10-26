@@ -177,7 +177,7 @@ def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None,
 
     # reshape output to what nibabel likes
     parcel_data = np.reshape(np.array(supervoxel.getParcelImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -187,7 +187,7 @@ def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None,
 
     #dims = supervoxel.getScaledDims()
     seg_data = np.reshape(np.array(supervoxel.getSegmentationImage(),
-                                    dtype=np.int32), newshape=dimensions, order='F')
+                                    dtype=np.int32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -196,7 +196,7 @@ def super_voxel_segmentation(image, prior_seg=None, prior_proba=None, mask=None,
     seg = nb.Nifti1Image(seg_data, affine, header)
 
     mems_data = np.reshape(np.array(supervoxel.getMaxPosteriorImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects

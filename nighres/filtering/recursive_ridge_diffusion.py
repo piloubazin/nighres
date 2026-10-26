@@ -231,17 +231,17 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
 
     # reshape output to what nibabel likes
     propagation_data = np.reshape(np.array(rrd.getPropagatedResponseImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
     
     #header['cal_max'] = np.nanmax(propagation_data)
     propag_img = nb.Nifti1Image(propagation_data, affine, header)
 
     if full_output:
         filter_data = np.reshape(np.array(rrd.getFilterResponseImage(),
-                                       dtype=np.float32), newshape=dimensions, order='F')
+                                       dtype=np.float32), shape=dimensions, order='F')
     
         scale_data = np.reshape(np.array(rrd.getDetectionScaleImage(),
-                                       dtype=np.int32), newshape=dimensions, order='F')
+                                       dtype=np.int32), shape=dimensions, order='F')
     
         if dimensions[2]==1:
             ridge_direction_data = np.reshape(np.array(rrd.getRidgeDirectionImage(),
@@ -255,10 +255,10 @@ def recursive_ridge_diffusion(input_image, ridge_intensities, ridge_filter,
                                         'F')
     
         ridge_pv_data = np.reshape(np.array(rrd.getRidgePartialVolumeImage(),
-                                       dtype=np.float32), newshape=dimensions, order='F')
+                                       dtype=np.float32), shape=dimensions, order='F')
     
         ridge_size_data = np.reshape(np.array(rrd.getRidgeSizeImage(),
-                                        dtype=np.float32), newshape=dimensions, order='F')
+                                        dtype=np.float32), shape=dimensions, order='F')
     
 
         # adapt header max for each image so that correct max is displayed

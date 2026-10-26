@@ -183,7 +183,7 @@ def spectral_voxel_spatial_embedding(image,
 
     # Collect output
     coord_data = np.reshape(np.array(algorithm.getImageEmbedding(),
-                               dtype=np.float32), newshape=dimensions4, order='F')
+                               dtype=np.float32), shape=dimensions4, order='F')
     
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -193,7 +193,7 @@ def spectral_voxel_spatial_embedding(image,
 
     if reference is not None:
         ref_data = np.reshape(np.array(algorithm.getReferenceEmbedding(),
-                               dtype=np.float32), newshape=dimref4, order='F')
+                               dtype=np.float32), shape=dimref4, order='F')
 
         header['cal_min'] = np.nanmin(ref_data)
         header['cal_max'] = np.nanmax(ref_data)
@@ -389,7 +389,7 @@ def spectral_voxel_thickness_embedding(image,
 
     # Collect output
     coord_data = np.reshape(np.array(algorithm.getImageEmbedding(),
-                               dtype=np.float32), newshape=dimensions4, order='F')
+                               dtype=np.float32), shape=dimensions4, order='F')
     
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -399,7 +399,7 @@ def spectral_voxel_thickness_embedding(image,
 
     if reference is not None:
         ref_data = np.reshape(np.array(algorithm.getReferenceEmbedding(),
-                               dtype=np.float32), newshape=dimref4, order='F')
+                               dtype=np.float32), shape=dimref4, order='F')
 
         header['cal_min'] = np.nanmin(ref_data)
         header['cal_max'] = np.nanmax(ref_data)
@@ -594,7 +594,7 @@ def spectral_voxel_data_embedding(image,
 
     # Collect output
     coord_data = np.reshape(np.array(algorithm.getImageEmbedding(),
-                               dtype=np.float32), newshape=dimensions4, order='F')
+                               dtype=np.float32), shape=dimensions4, order='F')
     
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -604,7 +604,7 @@ def spectral_voxel_data_embedding(image,
 
     if reference is not None:
         ref_data = np.reshape(np.array(algorithm.getReferenceEmbedding(),
-                               dtype=np.float32), newshape=dimref4, order='F')
+                               dtype=np.float32), shape=dimref4, order='F')
 
         header['cal_min'] = np.nanmin(ref_data)
         header['cal_max'] = np.nanmax(ref_data)
@@ -779,7 +779,7 @@ def spectral_voxel_mapping(image,
     embeddims = tuple(algorithm.getEmbeddingDims())
     
     mapped_data = np.reshape(np.array(algorithm.getEmbeddedImage(),
-                               dtype=np.float32), newshape=embeddims, order='F')
+                               dtype=np.float32), shape=embeddims, order='F')
     
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects

@@ -142,7 +142,7 @@ def oct_contrast_integration(input_image, weight_image,
     
     # reshape output to what nibabel likes
     result_data = np.reshape(np.array(oci.getContrastImage(),
-                                    dtype=np.float32), newshape=dim2d, order='F')
+                                    dtype=np.float32), shape=dim2d, order='F')
 
 
     # adapt header max for each image so that correct max is displayed

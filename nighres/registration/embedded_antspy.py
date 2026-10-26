@@ -7,7 +7,10 @@ import math
 # main dependencies: numpy, nibabel, ants
 import numpy
 import nibabel
-import ants.utils
+#import ants.utils
+from ants.internal import process_arguments
+from ants.internal import get_lib_fn
+
 
 # nighresjava and nighres functions
 import nighresjava
@@ -822,9 +825,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     args.append('0')
 
     # run the ANTs command directly
-    processed_args = ants.utils._int_antsProcessArguments(args)
+    processed_args = process_arguments(args)
     print(processed_args)
-    libfn = ants.utils.get_lib_fn("antsRegistration")
+    libfn = get_lib_fn("antsRegistration")
     libfn(processed_args)
 
     # output file names
@@ -872,9 +875,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         at.append('--output')
         at.append(transformed_source_files[idx])
 
-        processed_at = ants.utils._int_antsProcessArguments(at)
+        processed_at = process_arguments(at)
         print(processed_at)
-        libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+        libfn = get_lib_fn("antsApplyTransforms")
         libfn(processed_at)
 
     # Create coordinate mappings
@@ -898,9 +901,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
                                                         suffix='tmp_srccoordX_map'))
     src_at.append(src_mapX_trans)
 
-    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    processed_src_at = process_arguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_src_at)
 
     src_at = ['--dimensionality','2','--input-image-type','0']
@@ -923,9 +926,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
                                                         suffix='tmp_srccoordY_map'))
     src_at.append(src_mapY_trans)
 
-    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    processed_src_at = process_arguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_src_at)
 
     # combine X,Y mappings
@@ -958,9 +961,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     trg_at.append('--output')
     trg_at.append(trg_mapX_trans)
 
-    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    processed_trg_at = process_arguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_trg_at)
     
     trg_at = ['--dimensionality','2','--input-image-type','0']
@@ -983,9 +986,9 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
     trg_at.append('--output')
     trg_at.append(trg_mapY_trans)
 
-    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    processed_trg_at = process_arguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_trg_at)
     
     # combine X,Y mappings
@@ -1670,9 +1673,9 @@ def embedded_antspy_multi(source_images, target_images,
     args.append('0')
 
     # run the ANTs command directly
-    processed_args = ants.utils._int_antsProcessArguments(args)
+    processed_args = process_arguments(args)
     print(processed_args)
-    libfn = ants.utils.get_lib_fn("antsRegistration")
+    libfn = get_lib_fn("antsRegistration")
     libfn(processed_args)
                 
     # output file names
@@ -1720,9 +1723,9 @@ def embedded_antspy_multi(source_images, target_images,
         at.append('--output')
         at.append(transformed_source_files[idx])
 
-        processed_at = ants.utils._int_antsProcessArguments(at)
+        processed_at = process_arguments(at)
         print(processed_at)
-        libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+        libfn = get_lib_fn("antsApplyTransforms")
         libfn(processed_at)
 
     # Create coordinate mappings
@@ -1746,9 +1749,9 @@ def embedded_antspy_multi(source_images, target_images,
     src_at.append('--output')
     src_at.append(src_mapX_trans)
 
-    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    processed_src_at = process_arguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_src_at)
 
     src_at = ['--dimensionality','3','--input-image-type','0']
@@ -1771,9 +1774,9 @@ def embedded_antspy_multi(source_images, target_images,
     src_at.append('--output')
     src_at.append(src_mapY_trans)
 
-    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    processed_src_at = process_arguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_src_at)
 
     src_at = ['--dimensionality','3','--input-image-type','0']
@@ -1796,9 +1799,9 @@ def embedded_antspy_multi(source_images, target_images,
     src_at.append('--output')
     src_at.append(src_mapZ_trans)
 
-    processed_src_at = ants.utils._int_antsProcessArguments(src_at)
+    processed_src_at = process_arguments(src_at)
     print(processed_src_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_src_at)
 
     # combine X,Y,Z mappings
@@ -1829,9 +1832,9 @@ def embedded_antspy_multi(source_images, target_images,
     trg_at.append('--output')
     trg_at.append(trg_mapX_trans)
 
-    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    processed_trg_at = process_arguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_trg_at)
 
     trg_at = ['--dimensionality','3','--input-image-type','0']
@@ -1854,9 +1857,9 @@ def embedded_antspy_multi(source_images, target_images,
     trg_at.append('--output')
     trg_at.append(trg_mapY_trans)
 
-    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    processed_trg_at = process_arguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_trg_at)
 
     trg_at = ['--dimensionality','3','--input-image-type','0']
@@ -1879,9 +1882,9 @@ def embedded_antspy_multi(source_images, target_images,
     trg_at.append('--output')
     trg_at.append(trg_mapZ_trans)
 
-    processed_trg_at = ants.utils._int_antsProcessArguments(trg_at)
+    processed_trg_at = process_arguments(trg_at)
     print(processed_trg_at)
-    libfn = ants.utils.get_lib_fn("antsApplyTransforms")
+    libfn = get_lib_fn("antsApplyTransforms")
     libfn(processed_trg_at)
 
     # combine X,Y,Z mappings

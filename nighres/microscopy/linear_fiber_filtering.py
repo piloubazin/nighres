@@ -159,7 +159,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
 
     # reshape output to what nibabel likes
     data = np.reshape(np.array(llf.getLabelImage(),
-                                    dtype=np.int32), newshape=dimensions, order='F')
+                                    dtype=np.int32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -169,7 +169,7 @@ def linear_fiber_filtering(pv, diameter, theta, length,
 
     # reshape output to what nibabel likes
     data = np.reshape(np.array(llf.getProbaImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects

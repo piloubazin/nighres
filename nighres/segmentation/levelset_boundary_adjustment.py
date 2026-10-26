@@ -136,7 +136,7 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=3.0, sprea
 
     # reshape output to what nibabel likes
     result_data = np.reshape(np.array(algo.getLevelsetImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -145,7 +145,7 @@ def levelset_boundary_adjustment(levelset, image, mask=None, distance=3.0, sprea
     result = nb.Nifti1Image(result_data, affine, header)
 
     proba_data = np.reshape(np.array(algo.getProbaImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects

@@ -149,7 +149,7 @@ def super_voxels(image, mask=None, scaling=4.0, noise_level=0.1, output_type='av
 
     # reshape output to what nibabel likes
     parcel_data = np.reshape(np.array(supervoxel.getParcelImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -159,7 +159,7 @@ def super_voxels(image, mask=None, scaling=4.0, noise_level=0.1, output_type='av
 
     dims = supervoxel.getScaledDims()
     rescaled_data = np.reshape(np.array(supervoxel.getRescaledImage(),
-                                    dtype=np.float32), newshape=dims, order='F')
+                                    dtype=np.float32), shape=dims, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
@@ -168,7 +168,7 @@ def super_voxels(image, mask=None, scaling=4.0, noise_level=0.1, output_type='av
     rescaled = nb.Nifti1Image(rescaled_data, affine, header)
 
     mems_data = np.reshape(np.array(supervoxel.getMemsImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects

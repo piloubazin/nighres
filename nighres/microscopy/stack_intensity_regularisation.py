@@ -126,7 +126,7 @@ def stack_intensity_regularisation(image, cutoff=1, rmax=99, memory=3, mask=None
 
     # reshape output to what nibabel likes
     regularised_data = np.reshape(np.array(sir.getRegularisedImage(),
-                                    dtype=np.float32), newshape=dimensions, order='F')
+                                    dtype=np.float32), shape=dimensions, order='F')
 
     # adapt header max for each image so that correct max is displayed
     # and create nifiti objects
