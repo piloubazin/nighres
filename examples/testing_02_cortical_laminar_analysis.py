@@ -1,5 +1,5 @@
 """
-Cortical laminar analysis
+Cortical laminar analysis (testing)
 =======================================
 
 This example shows how to obtain a cortical laminar depth representation from

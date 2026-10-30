@@ -46,8 +46,7 @@ def super_voxels(image, mask=None, scaling=4.0, noise_level=0.1, output_type='av
 
         * parcel (niimg): The super-voxel parcellation of the original image
         * rescaled (niimg): The rescaled image of supervoxels
-        * mems (niimg): The membership estimate of original image voxels to corresponding 
-        super-voxels
+        * mems (niimg): The membership estimate of original image voxels to corresponding super-voxels
 
     Notes
     ----------

@@ -23,11 +23,11 @@ For further dependencies of specific interfaces see :ref:`add-deps`.
 From PyPI
 ----------
 
-You can download a recent stable release of Nighres from `PyPI <https://pypi.python.org/pypi/nighres>`_.
+Because parts of the package have to be built locally it is not possible to use ``pip install`` directly from PyPI.
+Instead, please download and install from :ref:`GitHub <github>`, 
+the :ref:`Docker image <docker-image>` or :ref:`Singularity container <singularity-image>`.
 
-Because parts of the package have to be built locally it is currently not possible to use ``pip install`` directly from PyPI. 
-Instead, please download and unpack the tarball to :ref:`build-nighres`. (Or use the :ref:`Docker image <docker-image>`)
-
+.. _github:
 From Github (recommended)
 ------------
 
@@ -43,15 +43,22 @@ Or download and unpack the zip file from Github under **Clone and download** ->
 
 Build Nighres
 --------------
-1. Make sure you have Java JDK and JCC installed and set up. You will likely need to point the JCC_JDK variable to you Java JDK installation, e.g on a Debian/Ubuntu amd64 system::
+1. Make sure you have Java JDK and JCC installed and set up. You will likely need to point the JCC_JDK variable 
+to you Java JDK installation, e.g on a Debian/Ubuntu amd64 system::
 
-    sudo apt-get install openjdk-8-jdk
-    export JCC_JDK=/usr/lib/jvm/java-8-openjdk-amd64
+    sudo apt-get install default-jdk
+    sudo ln -s /usr/lib/jvm/default-java /usr/lib/jvm/java-temurin-jdk
+    export JCC_JDK=/usr/lib/jvm/java-temurin-jdk
+    uv pip install jcc
+    
+Note: the name change to "temurin" is a hack to signal recent versions of java to JCC; it should become unnecessary at some point.
 
-2. Install the Python dependencies in a virtual environment with conda
+2. Install the Python dependencies in a virtual environment with conda or uv
 
 Make sure you have conda installed, otherwise see this 
 `page for the installation instruction <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#regular-installation>`_
+
+Alternatively, you may prefer `uv <https://docs.astral.sh/uv/>`_, a more versatile tool with similar capabilities. 
 
 If you have conda on your computer then create and activate the environment with::
 
