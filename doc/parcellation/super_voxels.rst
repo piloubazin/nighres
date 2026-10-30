@@ -1,4 +1,4 @@
-MASSP
+Super\ voxels
 ==================
 
 .. autofunction:: nighres.parcellation.super_voxels
