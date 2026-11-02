@@ -19,3 +19,4 @@ from nighres.registration.embedded_antspy2 import embedded_antspy2
 from nighres.registration.embedded_antspy2 import embedded_antspy2_2d
 from nighres.registration.embedded_antspy2 import embedded_antspy2_multi
 from nighres.registration.embedded_antspy2 import embedded_antspy2_2d_multi
+from nighres.registration.restricted_antspy import restricted_antspy

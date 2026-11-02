@@ -429,6 +429,7 @@ def spectral_voxel_data_embedding(image,
                     scale=50.0,
                     space=50.0,
                     link=1.0,
+                    depth=18,
                     alpha=0.0,
                     rotate=True,
                     affinity="linear",
@@ -460,6 +461,8 @@ def spectral_voxel_data_embedding(image,
         Spatial scaling factor (default is 10.0)
     link: float
         Spatial linking factor (default is 1.0)
+    depth: int
+        Number of nearest neighbors used in first approximation (default is 18)
     alpha: float
         Laplacian norm parameter in [0:1] (default is 0.0)
     rotate: bool
