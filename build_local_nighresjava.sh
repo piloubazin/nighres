@@ -191,6 +191,10 @@ jcc_args=(
 
 	# Compile
 	"--build"
+
+    # Lib paths to include
+    "--libpath $JAVA_HOME/lib"
+    "--libpath $JAVA_HOME/lib/server"
 )
 
 python3 -m jcc ${jcc_args[@]}
