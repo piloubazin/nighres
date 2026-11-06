@@ -8,6 +8,7 @@ import math
 import numpy
 import nibabel
 import ants.utils
+import scipy.ndimage
 
 # nighresjava and nighres functions
 import nighresjava
@@ -15,7 +16,7 @@ from ..io import load_volume, save_volume
 from ..utils import _output_dir_4saving, _fname_4saving, \
                     _check_topology_lut_dir
 from ..surface import probability_to_levelset
-from . import embedded_antspy_multi, apply_coordinate_mappings
+from . import embedded_antspy_2d_multi, apply_coordinate_mappings
 
 # convenience labels
 X=0
@@ -24,7 +25,8 @@ Z=2
 T=3
 
 def restricted_antspy(source_images, target_images, 
-                    axis=0, depth=2, symmetric=False,
+                    axis=0, depth=2,
+                    direction='center',
                     run_rigid=True,
                     rigid_iterations=1000,
                     run_similarity=False,
@@ -60,8 +62,8 @@ def restricted_antspy(source_images, target_images,
         The axis along which to restrict the registration (default is 0)
     depth: int    
         The  number of images to include in the Markov chain (default is 2)
-    symmetric: bool
-        Whether to compute a symmetrized transformation on the restricted axis (default is False)
+    direction: str
+        Directions for the computation {'center','symmetric','sweep'}
     run_rigid: bool
         Whether or not to run a rigid registration first (default is True)
     rigid_iterations: float
@@ -186,8 +188,10 @@ def restricted_antspy(source_images, target_images,
         mask = mask + (load_volume(img).get_fdata()!=0)
     for img in target_images[0:]:
         mask = mask + (load_volume(img).get_fdata()!=0)
-    center = int(numpy.center_of_mass(mask)[axis]
+    center = int(scipy.ndimage.center_of_mass(mask)[axis])
     end = mask.shape[axis]
+    start = 0
+    print('center: '+str(center))
     
     # from center register toward endpoints, then go back (?)
     
@@ -202,208 +206,805 @@ def restricted_antspy(source_images, target_images,
         data = load_volume(trg).get_fdata()
         targets.append(data)
     
-    mapping = numpy.zeros(targets[0].shape)
-    inverse = numpy.zeros(sources[0].shape)
+    mapping = numpy.zeros((targets[0].shape[0],targets[0].shape[1],targets[0].shape[2],3))
+    inverse = numpy.zeros((sources[0].shape[0],sources[0].shape[1],sources[0].shape[2],3))
     
-    # forward from center
-    for loc in range(center,end):
-               
-        src_imgs = []
-        trg_imgs = []
-        img_weights = []
-        # stack source sections, target sections, and previously registered sections
-        for idx,src in enumerate(source_images):
-            # current image (multiple times)
-            source = sources[idx]
-            src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
-            if axis==0: 
-                data = source[loc,:,:]
-            elif axis==1: 
-                data = source[:,loc,:]
-            elif axis==2:
-                data = source[:,:,loc]
-                
-            img = nibabel.Nifti1Image(data,None,None)
-            save_volume(src_img,img)
-            src_imgs.append(src_img)
+    if direction=='symmetric':
+        # forward and backward from center
+        for loc in range(center,end):
+            print('aligning '+str(loc))     
+            curr_depth = min(depth+1,loc-center+1)
             
-            # target images
-            target = targets[idx]
-            trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
-            if axis==0: 
-                data = target[loc,:,:]
-            elif axis==1: 
-                data = target[:,loc,:]
-            elif axis==2:
-                data = target[:,:,loc]
-                
-            img = nibabel.Nifti1Image(data,None,None)
-            save_volume(trg_img,img)
-            trg_imgs.append(trg_img)
-
-            img_weights.append(1.0)
-            
-            # previous images as additional target
-            for dep in range(1, min(depth+1,loc-center+1)):
-                trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
-                
+            src_imgs = []
+            trg_imgs = []
+            img_weights = []
+            # stack source sections, target sections, and previously registered sections
+            for idx,src in enumerate(source_images):
+                # current image (multiple times)
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
                 if axis==0: 
-                    data = source[loc-dep,:,:]
+                    data = source[loc,:,:]
                 elif axis==1: 
-                    data = source[:,loc-dep,:]
+                    data = source[:,loc,:]
                 elif axis==2:
-                    data = source[:,:,loc-dep]
+                    data = source[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = target[loc,:,:]
+                elif axis==1: 
+                    data = target[:,loc,:]
+                elif axis==2:
+                    data = target[:,:,loc]
                     
                 img = nibabel.Nifti1Image(data,None,None)
                 save_volume(trg_img,img)
                 trg_imgs.append(trg_img)
-                # add also current image as source
-                src_imgs.append(src_img)
-        
-                img_weights.append(1.0/depth)
-                
-                
-        step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
-                        image_weights=img_weights,
-                        run_rigid=run_rigid,
-                        rigid_iterations=rigid_iterations,
-                        run_similarity=run_similarity,
-                        similarity_iterations=similarity_iterations,
-                        run_affine=run_affine,
-                        affine_iterations=affine_iterations,
-                        run_syn=run_syn,
-                        coarse_iterations=coarse_iterations,
-                        medium_iterations=medium_iterations, 
-                        fine_iterations=fine_iterations,
-                        scaling_factor=scaling_factor,
-                        cost_function=cost_function,
-                        interpolation=interpolation,
-                        regularization=regularization,
-                        convergence=convergence,
-                        mask_zero=mask_zero,
-                        ignore_affine=False, ignore_orient=False, ignore_res=False,
-                        save_data=False, overwrite=False, output_dir=None,
-                        file_name=None)
-        
-        # copy results into source image, mappings
-	    for idx,src in enumerate(source_images):
-            if axis==0: 
-                sources[idx][loc,:,:] = step['transformed_sources'][idx].get_fdata()
-            elif axis==1: 
-                sources[idx][:,loc,:] = step['transformed_sources'][idx].get_fdata()
-            elif axis==2:
-                sources[idx][:,:,loc] = step['transformed_sources'][idx].get_fdata()
-                
-        if axis==0: 
-            mapping[loc,:,:] = step['mapping'].get_fdata()
-            inverse[loc,:,:] = step['inverse'].get_fdata()
-        elif axis==1: 
-            mapping[:,loc,:] = step['mapping'].get_fdata()
-            inverse[:,loc,:] = step['inverse'].get_fdata()
-        elif axis==2:
-            mapping[:,:,loc] = step['mapping'].get_fdata()
-            inverse[:,:,loc] = step['inverse'].get_fdata()
     
-    
-    # backward from center
-    for loc in range(center-1,-1,-1):
-               
-        src_imgs = []
-        trg_imgs = []
-        img_weights = []
-        # stack source sections, target sections, and previously registered sections
-        for idx,src in enumerate(source_images):
-            # current image (multiple times)
-            source = sources[idx]
-            src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
-            if axis==0: 
-                data = source[loc,:,:]
-            elif axis==1: 
-                data = source[:,loc,:]
-            elif axis==2:
-                data = source[:,:,loc]
+                img_weights.append(1.0)
                 
-            img = nibabel.Nifti1Image(data,None,None)
-            save_volume(src_img,img)
-            src_imgs.append(src_img)
-            
-            # target images
-            target = targets[idx]
-            trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
-            if axis==0: 
-                data = target[loc,:,:]
-            elif axis==1: 
-                data = target[:,loc,:]
-            elif axis==2:
-                data = target[:,:,loc]
-                
-            img = nibabel.Nifti1Image(data,None,None)
-            save_volume(trg_img,img)
-            trg_imgs.append(trg_img)
-
-            img_weights.append(1.0)
-            
-            # previous images as additional target
-            for dep in range(1, min(depth+1,center-loc+1)):
-                trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
-                
+                # mirror image (multiple times)
+                mir = 2*center-loc
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_mirror.nii.gz'
                 if axis==0: 
-                    data = source[loc+dep,:,:]
+                    data = source[mir,:,:]
                 elif axis==1: 
-                    data = source[:,loc+dep,:]
+                    data = source[:,mir,:]
                 elif axis==2:
-                    data = source[:,:,loc+dep]
+                    data = source[:,:,mir]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_mirror.nii.gz'
+                if axis==0: 
+                    data = target[mir,:,:]
+                elif axis==1: 
+                    data = target[:,mir,:]
+                elif axis==2:
+                    data = target[:,:,mir]
                     
                 img = nibabel.Nifti1Image(data,None,None)
                 save_volume(trg_img,img)
                 trg_imgs.append(trg_img)
-                # add also current image as source
-                src_imgs.append(src_img)
-        
-                img_weights.append(1.0/depth)
+    
+                img_weights.append(1.0)
                 
-                
-        step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
-                        image_weights=img_weights,
-                        run_rigid=run_rigid,
-                        rigid_iterations=rigid_iterations,
-                        run_similarity=run_similarity,
-                        similarity_iterations=similarity_iterations,
-                        run_affine=run_affine,
-                        affine_iterations=affine_iterations,
-                        run_syn=run_syn,
-                        coarse_iterations=coarse_iterations,
-                        medium_iterations=medium_iterations, 
-                        fine_iterations=fine_iterations,
-                        scaling_factor=scaling_factor,
-                        cost_function=cost_function,
-                        interpolation=interpolation,
-                        regularization=regularization,
-                        convergence=convergence,
-                        mask_zero=mask_zero,
-                        ignore_affine=False, ignore_orient=False, ignore_res=False,
-                        save_data=False, overwrite=False, output_dir=None,
-                        file_name=None)
-        
-        # copy results into source image, mappings
-	    for idx,src in enumerate(source_images):
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[loc-dep,:,:]
+                    elif axis==1: 
+                        data = source[:,loc-dep,:]
+                    elif axis==2:
+                        data = source[:,:,loc-dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_mdepth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[mir+dep,:,:]
+                    elif axis==1: 
+                        data = source[:,mir+dep,:]
+                    elif axis==2:
+                        data = source[:,:,mir+dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                    
+            step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
+                            image_weights=img_weights,
+                            run_rigid=run_rigid,
+                            rigid_iterations=rigid_iterations,
+                            run_similarity=run_similarity,
+                            similarity_iterations=similarity_iterations,
+                            run_affine=run_affine,
+                            affine_iterations=affine_iterations,
+                            run_syn=run_syn,
+                            coarse_iterations=coarse_iterations,
+                            medium_iterations=medium_iterations, 
+                            fine_iterations=fine_iterations,
+                            scaling_factor=scaling_factor,
+                            cost_function=cost_function,
+                            interpolation=interpolation,
+                            regularization=regularization,
+                            convergence=convergence,
+                            mask_zero=mask_zero,
+                            ignore_affine=False, ignore_orient=False, ignore_res=False,
+                            save_data=False, overwrite=False, output_dir=None,
+                            file_name=None)
+                    
+            # copy results into source image, mappings
+            for idx,src in enumerate(source_images):
+                if axis==0: 
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                if axis==0: 
+                    sources[idx][mir,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,mir,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,mir] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+            
             if axis==0: 
-                sources[idx][loc,:,:] = step['transformed_sources'][idx].get_fdata()
+                mapping[loc,:,:,0] = loc
+                mapping[loc,:,:,1] = step['mapping'].get_fdata()[:,:,0]
+                mapping[loc,:,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[loc,:,:,0] = loc
+                inverse[loc,:,:,1] = step['inverse'].get_fdata()[:,:,0]
+                inverse[loc,:,:,2] = step['inverse'].get_fdata()[:,:,1]
             elif axis==1: 
-                sources[idx][:,loc,:] = step['transformed_sources'][idx].get_fdata()
+                mapping[:,loc,:,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,loc,:,1] = loc
+                mapping[:,loc,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[:,loc,:,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,loc,:,1] = loc
+                inverse[:,loc,:,2] = step['inverse'].get_fdata()[:,:,1]
             elif axis==2:
-                sources[idx][:,:,loc] = step['transformed_sources'][idx].get_fdata()
+                mapping[:,:,loc,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,:,loc,1] = step['mapping'].get_fdata()[:,:,1]
+                mapping[:,:,loc,2] = loc
+                inverse[:,:,loc,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,:,loc,1] = step['inverse'].get_fdata()[:,:,1]
+                inverse[:,:,loc,2] = loc
+        
+        for loc in range(end-1,center+1):
+            print('aligning '+str(loc))     
+            curr_depth = min(depth+1,end-1-loc+1)
+            
+            src_imgs = []
+            trg_imgs = []
+            img_weights = []
+            # stack source sections, target sections, and previously registered sections
+            for idx,src in enumerate(source_images):
+                # current image (multiple times)
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = source[loc,:,:]
+                elif axis==1: 
+                    data = source[:,loc,:]
+                elif axis==2:
+                    data = source[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
                 
-        if axis==0: 
-            mapping[loc,:,:] = step['mapping'].get_fdata()
-            inverse[loc,:,:] = step['inverse'].get_fdata()
-        elif axis==1: 
-            mapping[:,loc,:] = step['mapping'].get_fdata()
-            inverse[:,loc,:] = step['inverse'].get_fdata()
-        elif axis==2:
-            mapping[:,:,loc] = step['mapping'].get_fdata()
-            inverse[:,:,loc] = step['inverse'].get_fdata()
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = target[loc,:,:]
+                elif axis==1: 
+                    data = target[:,loc,:]
+                elif axis==2:
+                    data = target[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(trg_img,img)
+                trg_imgs.append(trg_img)
+    
+                img_weights.append(1.0)
                 
+                # mirror image (multiple times)
+                mir = 2*center-loc
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_mirror.nii.gz'
+                if axis==0: 
+                    data = source[mir,:,:]
+                elif axis==1: 
+                    data = source[:,mir,:]
+                elif axis==2:
+                    data = source[:,:,mir]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_mirror.nii.gz'
+                if axis==0: 
+                    data = target[mir,:,:]
+                elif axis==1: 
+                    data = target[:,mir,:]
+                elif axis==2:
+                    data = target[:,:,mir]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(trg_img,img)
+                trg_imgs.append(trg_img)
+    
+                img_weights.append(1.0)
+                
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[loc+dep,:,:]
+                    elif axis==1: 
+                        data = source[:,loc+dep,:]
+                    elif axis==2:
+                        data = source[:,:,loc+dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_mdepth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[mir-dep,:,:]
+                    elif axis==1: 
+                        data = source[:,mir-dep,:]
+                    elif axis==2:
+                        data = source[:,:,mir-dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                    
+            step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
+                            image_weights=img_weights,
+                            run_rigid=run_rigid,
+                            rigid_iterations=rigid_iterations,
+                            run_similarity=run_similarity,
+                            similarity_iterations=similarity_iterations,
+                            run_affine=run_affine,
+                            affine_iterations=affine_iterations,
+                            run_syn=run_syn,
+                            coarse_iterations=coarse_iterations,
+                            medium_iterations=medium_iterations, 
+                            fine_iterations=fine_iterations,
+                            scaling_factor=scaling_factor,
+                            cost_function=cost_function,
+                            interpolation=interpolation,
+                            regularization=regularization,
+                            convergence=convergence,
+                            mask_zero=mask_zero,
+                            ignore_affine=False, ignore_orient=False, ignore_res=False,
+                            save_data=False, overwrite=False, output_dir=None,
+                            file_name=None)
+                    
+            # copy results into source image, mappings
+            for idx,src in enumerate(source_images):
+                if axis==0: 
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                if axis==0: 
+                    sources[idx][mir,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,mir,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,mir] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+            
+            if axis==0: 
+                mapping[loc,:,:,0] = loc
+                mapping[loc,:,:,1] = step['mapping'].get_fdata()[:,:,0]
+                mapping[loc,:,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[loc,:,:,0] = loc
+                inverse[loc,:,:,1] = step['inverse'].get_fdata()[:,:,0]
+                inverse[loc,:,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==1: 
+                mapping[:,loc,:,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,loc,:,1] = loc
+                mapping[:,loc,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[:,loc,:,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,loc,:,1] = loc
+                inverse[:,loc,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==2:
+                mapping[:,:,loc,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,:,loc,1] = step['mapping'].get_fdata()[:,:,1]
+                mapping[:,:,loc,2] = loc
+                inverse[:,:,loc,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,:,loc,1] = step['inverse'].get_fdata()[:,:,1]
+                inverse[:,:,loc,2] = loc
+        
+    elif direction=='center':
+    
+        # forward from center
+        for loc in range(center,end):
+            print('aligning '+str(loc))  
+            curr_depth = min(depth+1,loc-center+1)
+            
+            src_imgs = []
+            trg_imgs = []
+            img_weights = []
+            # stack source sections, target sections, and previously registered sections
+            for idx,src in enumerate(source_images):
+                # current image (multiple times)
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = source[loc,:,:]
+                elif axis==1: 
+                    data = source[:,loc,:]
+                elif axis==2:
+                    data = source[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = target[loc,:,:]
+                elif axis==1: 
+                    data = target[:,loc,:]
+                elif axis==2:
+                    data = target[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(trg_img,img)
+                trg_imgs.append(trg_img)
+    
+                img_weights.append(1.0)
+                
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[loc-dep,:,:]
+                    elif axis==1: 
+                        data = source[:,loc-dep,:]
+                    elif axis==2:
+                        data = source[:,:,loc-dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                    
+            step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
+                            image_weights=img_weights,
+                            run_rigid=run_rigid,
+                            rigid_iterations=rigid_iterations,
+                            run_similarity=run_similarity,
+                            similarity_iterations=similarity_iterations,
+                            run_affine=run_affine,
+                            affine_iterations=affine_iterations,
+                            run_syn=run_syn,
+                            coarse_iterations=coarse_iterations,
+                            medium_iterations=medium_iterations, 
+                            fine_iterations=fine_iterations,
+                            scaling_factor=scaling_factor,
+                            cost_function=cost_function,
+                            interpolation=interpolation,
+                            regularization=regularization,
+                            convergence=convergence,
+                            mask_zero=mask_zero,
+                            ignore_affine=False, ignore_orient=False, ignore_res=False,
+                            save_data=False, overwrite=False, output_dir=None,
+                            file_name=None)
+                    
+            # copy results into source image, mappings
+            for idx,src in enumerate(source_images):
+                if axis==0: 
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+            
+            if axis==0: 
+                mapping[loc,:,:,0] = loc
+                mapping[loc,:,:,1] = step['mapping'].get_fdata()[:,:,0]
+                mapping[loc,:,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[loc,:,:,0] = loc
+                inverse[loc,:,:,1] = step['inverse'].get_fdata()[:,:,0]
+                inverse[loc,:,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==1: 
+                mapping[:,loc,:,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,loc,:,1] = loc
+                mapping[:,loc,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[:,loc,:,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,loc,:,1] = loc
+                inverse[:,loc,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==2:
+                mapping[:,:,loc,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,:,loc,1] = step['mapping'].get_fdata()[:,:,1]
+                mapping[:,:,loc,2] = loc
+                inverse[:,:,loc,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,:,loc,1] = step['inverse'].get_fdata()[:,:,1]
+                inverse[:,:,loc,2] = loc
+        
+        
+        # backward from center
+        for loc in range(center-1,-1,-1):
+            print('aligning '+str(loc))       
+            curr_depth = min(depth+1,center-loc+1)
+            
+            src_imgs = []
+            trg_imgs = []
+            img_weights = []
+            # stack source sections, target sections, and previously registered sections
+            for idx,src in enumerate(source_images):
+                # current image (multiple times)
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = source[loc,:,:]
+                elif axis==1: 
+                    data = source[:,loc,:]
+                elif axis==2:
+                    data = source[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = target[loc,:,:]
+                elif axis==1: 
+                    data = target[:,loc,:]
+                elif axis==2:
+                    data = target[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(trg_img,img)
+                trg_imgs.append(trg_img)
+    
+                img_weights.append(1.0)
+                
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[loc+dep,:,:]
+                    elif axis==1: 
+                        data = source[:,loc+dep,:]
+                    elif axis==2:
+                        data = source[:,:,loc+dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                    
+            step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
+                            image_weights=img_weights,
+                            run_rigid=run_rigid,
+                            rigid_iterations=rigid_iterations,
+                            run_similarity=run_similarity,
+                            similarity_iterations=similarity_iterations,
+                            run_affine=run_affine,
+                            affine_iterations=affine_iterations,
+                            run_syn=run_syn,
+                            coarse_iterations=coarse_iterations,
+                            medium_iterations=medium_iterations, 
+                            fine_iterations=fine_iterations,
+                            scaling_factor=scaling_factor,
+                            cost_function=cost_function,
+                            interpolation=interpolation,
+                            regularization=regularization,
+                            convergence=convergence,
+                            mask_zero=mask_zero,
+                            ignore_affine=False, ignore_orient=False, ignore_res=False,
+                            save_data=False, overwrite=False, output_dir=None,
+                            file_name=None)
+            
+            # copy results into source image, mappings
+            for idx,src in enumerate(source_images):
+                if axis==0: 
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    
+            if axis==0: 
+                mapping[loc,:,:,0] = loc
+                mapping[loc,:,:,1] = step['mapping'].get_fdata()[:,:,0]
+                mapping[loc,:,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[loc,:,:,0] = loc
+                inverse[loc,:,:,1] = step['inverse'].get_fdata()[:,:,0]
+                inverse[loc,:,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==1: 
+                mapping[:,loc,:,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,loc,:,1] = loc
+                mapping[:,loc,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[:,loc,:,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,loc,:,1] = loc
+                inverse[:,loc,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==2:
+                mapping[:,:,loc,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,:,loc,1] = step['mapping'].get_fdata()[:,:,1]
+                mapping[:,:,loc,2] = loc
+                inverse[:,:,loc,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,:,loc,1] = step['inverse'].get_fdata()[:,:,1]
+                inverse[:,:,loc,2] = loc
+                    
+    elif direction=='sweep':
+    
+        # forward from start
+        for loc in range(start,end):
+            print('aligning '+str(loc))  
+            curr_depth = min(depth+1,loc-start+1)
+            
+            src_imgs = []
+            trg_imgs = []
+            img_weights = []
+            # stack source sections, target sections, and previously registered sections
+            for idx,src in enumerate(source_images):
+                # current image (multiple times)
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = source[loc,:,:]
+                elif axis==1: 
+                    data = source[:,loc,:]
+                elif axis==2:
+                    data = source[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = target[loc,:,:]
+                elif axis==1: 
+                    data = target[:,loc,:]
+                elif axis==2:
+                    data = target[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(trg_img,img)
+                trg_imgs.append(trg_img)
+    
+                img_weights.append(1.0)
+                
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[loc-dep,:,:]
+                    elif axis==1: 
+                        data = source[:,loc-dep,:]
+                    elif axis==2:
+                        data = source[:,:,loc-dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                    
+            step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
+                            image_weights=img_weights,
+                            run_rigid=run_rigid,
+                            rigid_iterations=rigid_iterations,
+                            run_similarity=run_similarity,
+                            similarity_iterations=similarity_iterations,
+                            run_affine=run_affine,
+                            affine_iterations=affine_iterations,
+                            run_syn=run_syn,
+                            coarse_iterations=coarse_iterations,
+                            medium_iterations=medium_iterations, 
+                            fine_iterations=fine_iterations,
+                            scaling_factor=scaling_factor,
+                            cost_function=cost_function,
+                            interpolation=interpolation,
+                            regularization=regularization,
+                            convergence=convergence,
+                            mask_zero=mask_zero,
+                            ignore_affine=False, ignore_orient=False, ignore_res=False,
+                            save_data=False, overwrite=False, output_dir=None,
+                            file_name=None)
+                    
+            # copy results into source image, mappings
+            for idx,src in enumerate(source_images):
+                if axis==0: 
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+            
+            if axis==0: 
+                mapping[loc,:,:,0] = loc
+                mapping[loc,:,:,1] = step['mapping'].get_fdata()[:,:,0]
+                mapping[loc,:,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[loc,:,:,0] = loc
+                inverse[loc,:,:,1] = step['inverse'].get_fdata()[:,:,0]
+                inverse[loc,:,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==1: 
+                mapping[:,loc,:,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,loc,:,1] = loc
+                mapping[:,loc,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[:,loc,:,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,loc,:,1] = loc
+                inverse[:,loc,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==2:
+                mapping[:,:,loc,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,:,loc,1] = step['mapping'].get_fdata()[:,:,1]
+                mapping[:,:,loc,2] = loc
+                inverse[:,:,loc,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,:,loc,1] = step['inverse'].get_fdata()[:,:,1]
+                inverse[:,:,loc,2] = loc
+        
+        
+        # backward from end
+        for loc in range(end-1,-1,-1):
+            print('aligning '+str(loc))       
+            curr_depth = min(depth+1,end-1-loc+1)
+            
+            src_imgs = []
+            trg_imgs = []
+            img_weights = []
+            # stack source sections, target sections, and previously registered sections
+            for idx,src in enumerate(source_images):
+                # current image (multiple times)
+                source = sources[idx]
+                src_img = tmp+'_src'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = source[loc,:,:]
+                elif axis==1: 
+                    data = source[:,loc,:]
+                elif axis==2:
+                    data = source[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(src_img,img)
+                src_imgs.append(src_img)
+                
+                # target images
+                target = targets[idx]
+                trg_img = tmp+'_trg'+str(idx)+'_current.nii.gz'
+                if axis==0: 
+                    data = target[loc,:,:]
+                elif axis==1: 
+                    data = target[:,loc,:]
+                elif axis==2:
+                    data = target[:,:,loc]
+                    
+                img = nibabel.Nifti1Image(data,None,None)
+                save_volume(trg_img,img)
+                trg_imgs.append(trg_img)
+    
+                img_weights.append(1.0)
+                
+                # previous images as additional target
+                for dep in range(1, curr_depth):
+                    trg_img = tmp+'_src'+str(idx)+'_depth'+str(dep)+'.nii.gz'
+                    
+                    if axis==0: 
+                        data = source[loc+dep,:,:]
+                    elif axis==1: 
+                        data = source[:,loc+dep,:]
+                    elif axis==2:
+                        data = source[:,:,loc+dep]
+                        
+                    img = nibabel.Nifti1Image(data,None,None)
+                    save_volume(trg_img,img)
+                    trg_imgs.append(trg_img)
+                    # add also current image as source
+                    src_imgs.append(src_img)
+            
+                    img_weights.append(1.0/depth)
+                    
+                    
+            step = embedded_antspy_2d_multi(src_imgs, trg_imgs,
+                            image_weights=img_weights,
+                            run_rigid=run_rigid,
+                            rigid_iterations=rigid_iterations,
+                            run_similarity=run_similarity,
+                            similarity_iterations=similarity_iterations,
+                            run_affine=run_affine,
+                            affine_iterations=affine_iterations,
+                            run_syn=run_syn,
+                            coarse_iterations=coarse_iterations,
+                            medium_iterations=medium_iterations, 
+                            fine_iterations=fine_iterations,
+                            scaling_factor=scaling_factor,
+                            cost_function=cost_function,
+                            interpolation=interpolation,
+                            regularization=regularization,
+                            convergence=convergence,
+                            mask_zero=mask_zero,
+                            ignore_affine=False, ignore_orient=False, ignore_res=False,
+                            save_data=False, overwrite=False, output_dir=None,
+                            file_name=None)
+            
+            # copy results into source image, mappings
+            for idx,src in enumerate(source_images):
+                if axis==0: 
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==1: 
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                elif axis==2:
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    
+            if axis==0: 
+                mapping[loc,:,:,0] = loc
+                mapping[loc,:,:,1] = step['mapping'].get_fdata()[:,:,0]
+                mapping[loc,:,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[loc,:,:,0] = loc
+                inverse[loc,:,:,1] = step['inverse'].get_fdata()[:,:,0]
+                inverse[loc,:,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==1: 
+                mapping[:,loc,:,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,loc,:,1] = loc
+                mapping[:,loc,:,2] = step['mapping'].get_fdata()[:,:,1]
+                inverse[:,loc,:,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,loc,:,1] = loc
+                inverse[:,loc,:,2] = step['inverse'].get_fdata()[:,:,1]
+            elif axis==2:
+                mapping[:,:,loc,0] = step['mapping'].get_fdata()[:,:,0]
+                mapping[:,:,loc,1] = step['mapping'].get_fdata()[:,:,1]
+                mapping[:,:,loc,2] = loc
+                inverse[:,:,loc,0] = step['inverse'].get_fdata()[:,:,0]
+                inverse[:,:,loc,1] = step['inverse'].get_fdata()[:,:,1]
+                inverse[:,:,loc,2] = loc
+                    
 	    
     # clean up intermediate files
     for idx,src in enumerate(source_images):
@@ -419,15 +1020,15 @@ def restricted_antspy(source_images, target_images,
     transformed = []
     img = load_volume(target_images[0])
     for idx,trg in enumerate(target_images):
-        transformed.append(nibabel.Nifti1Image(sources[idx],img.affine,img.header)
+        transformed.append(nibabel.Nifti1Image(sources[idx],img.affine,img.header))
     mapping = nibabel.Nifti1Image(mapping,img.affine,img.header)
-    inverser = nibabel.Nifti1Image(inverse,img.affime,img.header)
+    inverse = nibabel.Nifti1Image(inverse,img.affine,img.header)
         
     if save_data:
         for idx,trans in enumerate(transformed):
             save_volume(transformed_source_files[idx],trans)
         save_volume(mapping_file,mapping)
-        save_volume(inverse_mapping_file,iinverse)
+        save_volume(inverse_mapping_file,inverse)
         
         transformed = transformed_source_files
         mapping = mapping_file
@@ -438,4 +1039,4 @@ def restricted_antspy(source_images, target_images,
               'mapping': mapping,
               'inverse': inverse}
 
-    
+    return output

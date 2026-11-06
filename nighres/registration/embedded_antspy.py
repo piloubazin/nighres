@@ -1033,11 +1033,20 @@ def embedded_antspy_2d_multi(source_images, target_images, image_weights=None,
         # collect saved outputs
         transformed = []
         for trans_file in transformed_source_files:
-            transformed.append(load_volume(trans_file))
+            img = load_volume(trans_file)
+            img.get_fdata()
+            transformed.append(img)
+        
+        mapping = load_volume(mapping_file)
+        mapping.get_fdata()
+        
+        inverse = load_volume(inverse_mapping_file)
+        inverse.get_fdata()
+        
         output = {'transformed_sources': transformed,
               'transformed_source': transformed[0],
-              'mapping': load_volume(mapping_file),
-              'inverse': load_volume(inverse_mapping_file)}
+              'mapping': mapping,
+              'inverse': inverse}
 
         # remove output files if *not* saved
         for idx,trans_image in enumerate(transformed_source_files):

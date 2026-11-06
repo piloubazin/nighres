@@ -428,6 +428,7 @@ def spectral_voxel_data_embedding(image,
                     msize=500,
                     scale=50.0,
                     space=50.0,
+                    threshold=0.0,
                     link=1.0,
                     depth=18,
                     alpha=0.0,
@@ -439,7 +440,7 @@ def spectral_voxel_data_embedding(image,
                     output_dir=None,
                     file_name=None):
 
-    """ Spectral voxel spatial embedding
+    """ Spectral voxel data embedding
     
     Derive a spectral Laplacian embedding from a voxel domain
 
@@ -459,6 +460,8 @@ def spectral_voxel_data_embedding(image,
         Distance scale between sample points (default is 10.0)
     space: float
         Spatial scaling factor (default is 10.0)
+    threshold: float
+        Background threshold (default is 0.0)
     link: float
         Spatial linking factor (default is 1.0)
     depth: int
@@ -572,9 +575,11 @@ def spectral_voxel_data_embedding(image,
     
     algorithm.setDistanceScale(scale)
     algorithm.setSpatialScale(space)    
+    algorithm.setBackgroundThreshold(threshold)
     algorithm.setLinkingFactor(link)
     algorithm.setAffinityType(affinity)
     algorithm.setDistanceType(distance)
+    
     
     # execute
     try:
