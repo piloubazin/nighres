@@ -345,17 +345,17 @@ def restricted_antspy(source_images, target_images,
             # copy results into source image, mappings
             for idx,src in enumerate(source_images):
                 if axis==0: 
-                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(2*curr_depth)+0].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(2*curr_depth)+0].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(2*curr_depth)+0].get_fdata()
                 if axis==0: 
-                    sources[idx][mir,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                    sources[idx][mir,:,:] = step['transformed_sources'][idx*(2*curr_depth)+1].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,mir,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                    sources[idx][:,mir,:] = step['transformed_sources'][idx*(2*curr_depth)+1].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,mir] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                    sources[idx][:,:,mir] = step['transformed_sources'][idx*(2*curr_depth)+1].get_fdata()
             
             if axis==0: 
                 mapping[loc,:,:,0] = loc
@@ -513,17 +513,17 @@ def restricted_antspy(source_images, target_images,
             # copy results into source image, mappings
             for idx,src in enumerate(source_images):
                 if axis==0: 
-                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(2*curr_depth)+0].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(2*curr_depth)+0].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(2*curr_depth+2)+0].get_fdata()
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(2*curr_depth)+0].get_fdata()
                 if axis==0: 
-                    sources[idx][mir,:,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                    sources[idx][mir,:,:] = step['transformed_sources'][idx*(2*curr_depth)+1].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,mir,:] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                    sources[idx][:,mir,:] = step['transformed_sources'][idx*(2*curr_depth)+1].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,mir] = step['transformed_sources'][idx*(2*curr_depth+2)+1].get_fdata()
+                    sources[idx][:,:,mir] = step['transformed_sources'][idx*(2*curr_depth)+1].get_fdata()
             
             if axis==0: 
                 mapping[loc,:,:,0] = loc
@@ -634,11 +634,11 @@ def restricted_antspy(source_images, target_images,
             # copy results into source image, mappings
             for idx,src in enumerate(source_images):
                 if axis==0: 
-                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
             
             if axis==0: 
                 mapping[loc,:,:,0] = loc
@@ -748,11 +748,11 @@ def restricted_antspy(source_images, target_images,
             # copy results into source image, mappings
             for idx,src in enumerate(source_images):
                 if axis==0: 
-                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                     
             if axis==0: 
                 mapping[loc,:,:,0] = loc
@@ -863,11 +863,11 @@ def restricted_antspy(source_images, target_images,
             # copy results into source image, mappings
             for idx,src in enumerate(source_images):
                 if axis==0: 
-                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
             
             if axis==0: 
                 mapping[loc,:,:,0] = loc
@@ -977,11 +977,11 @@ def restricted_antspy(source_images, target_images,
             # copy results into source image, mappings
             for idx,src in enumerate(source_images):
                 if axis==0: 
-                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][loc,:,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==1: 
-                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,loc,:] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                 elif axis==2:
-                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth+1)].get_fdata()
+                    sources[idx][:,:,loc] = step['transformed_sources'][idx*(curr_depth)].get_fdata()
                     
             if axis==0: 
                 mapping[loc,:,:,0] = loc
