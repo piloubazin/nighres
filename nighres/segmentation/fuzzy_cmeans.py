@@ -280,11 +280,11 @@ def fuzzy_cmeans_multi(images, clusters=3, max_iterations=50, max_difference=0.0
         int_files = []
         if map_intensity:
             for img in images:
-            intensity_file = os.path.join(output_dir, 
+                intensity_file = os.path.join(output_dir, 
                             _fname_4saving(module=__name__,file_name=file_name,
                                        rootfile=img,
                                        suffix='rfcm-map'))
-            int_files.append(inteisty_file)
+                int_files.append(intensity_file)
             
         if overwrite is False \
             and os.path.isfile(classification_file):
@@ -344,7 +344,7 @@ def fuzzy_cmeans_multi(images, clusters=3, max_iterations=50, max_difference=0.0
 
     # images
     for idx,img in enumerate(images):
-        data = nighres.io.load_volume(img).get_fdata()
+        data = load_volume(img).get_fdata()
         rfcm.setImageAt(idx,nighresjava.JArray('float')(
                                             (data.flatten('F')).astype(float)))
     
