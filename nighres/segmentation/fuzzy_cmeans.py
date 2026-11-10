@@ -395,9 +395,9 @@ def fuzzy_cmeans_multi(images, clusters=3, max_iterations=50, max_difference=0.0
             save_volume(mem_files[c], memberships[c])
         if map_intensity:
             for i in range(len(images)):
-                save_volume(intensity_files[i],intensities[i])
+                save_volume(int_files[i],intensities[i])
             output= {'classification': classification_file, 'memberships': mem_files,
-                     'intensity': intensity_files}
+                     'intensity': int_files}
         else:
             output= {'classification': classification_file, 'memberships': mem_files}
     else:
